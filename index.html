@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BVS – Dashboard Cotizaciones 2026</title>
+<meta name="description" content="Dashboard de cotizaciones y oportunidades CRM – Walter Cedrón BVS 2026"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0d14;--surface:#111520;--surface2:#171d2e;--border:#1e2740;
+    --accent:#00e5ff;--accent2:#7c5cfc;--green:#00e096;--yellow:#ffc946;--red:#ff4f6a;
+    --text:#e8eaf6;--muted:#6b7599;--font-head:'Syne',sans-serif;--font-mono:'DM Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh;overflow-x:hidden}
+  /* NOISE TEXTURE */
+  body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.5}
+  /* HEADER */
+  header{position:relative;z-index:10;background:linear-gradient(135deg,#0d1220 0%,#111827 100%);border-bottom:1px solid var(--border);padding:1.5rem 2rem 1.2rem}
+  .header-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  .brand{display:flex;align-items:center;gap:.75rem}
+  .brand-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+  .brand h1{font-family:var(--font-head);font-size:1.25rem;font-weight:800;letter-spacing:.05em;color:var(--text)}
+  .brand span{color:var(--accent)}
+  .header-meta{font-size:.72rem;color:var(--muted);text-align:right}
+  .header-meta strong{color:var(--yellow)}
+  /* KPI BANNER */
+  .kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
+  .kpi-card{background:var(--surface);padding:1.1rem 1.4rem;position:relative;overflow:hidden;transition:background .2s}
+  .kpi-card:hover{background:var(--surface2)}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--accent-color,var(--accent))}
+  .kpi-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem}
+  .kpi-value{font-family:var(--font-head);font-size:1.5rem;font-weight:800;color:var(--text)}
+  .kpi-sub{font-size:.65rem;color:var(--muted);margin-top:.2rem}
+  /* PROGRESS BAR */
+  .prog-wrap{margin-top:.5rem;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+  .prog-bar{height:100%;border-radius:2px;background:var(--accent);transition:width .8s ease}
+  /* MAIN LAYOUT */
+  main{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:0;max-width:1600px;margin:0 auto;padding:1.5rem}
+  /* SECTION */
+  section{margin-bottom:1.5rem}
+  .section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+  .section-tag{font-family:var(--font-head);font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);padding:.25rem .6rem;border-radius:2px}
+  .section-title{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--text)}
+  .section-count{font-size:.75rem;color:var(--muted);margin-left:auto}
+  /* FILTER BAR */
+  .filter-bar{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;align-items:center}
+  .filter-bar input,.filter-bar select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.75rem;padding:.35rem .7rem;border-radius:3px;outline:none;transition:border-color .2s}
+  .filter-bar input:focus,.filter-bar select:focus{border-color:var(--accent)}
+  .filter-bar input{flex:1;min-width:200px}
+  .btn{font-family:var(--font-mono);font-size:.72rem;padding:.35rem .8rem;border-radius:3px;border:1px solid var(--border);cursor:pointer;transition:all .2s;background:var(--surface2);color:var(--muted)}
+  .btn.active,.btn:hover{background:rgba(0,229,255,.1);border-color:var(--accent);color:var(--accent)}
+  /* TABLE */
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:4px}
+  table{width:100%;border-collapse:collapse;font-size:.73rem}
+  th{background:var(--surface2);color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-size:.62rem;padding:.6rem .9rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+  th:hover{color:var(--accent)}
+  td{padding:.55rem .9rem;border-bottom:1px solid rgba(30,39,64,.5);vertical-align:middle;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+  /* BADGES */
+  .badge{display:inline-block;font-size:.6rem;font-weight:600;padding:.15rem .45rem;border-radius:2px;text-transform:uppercase;letter-spacing:.06em}
+  .b-lograda{background:rgba(0,224,150,.15);color:var(--green);border:1px solid rgba(0,224,150,.3)}
+  .b-confirmar{background:rgba(255,201,70,.12);color:var(--yellow);border:1px solid rgba(255,201,70,.25)}
+  .b-perdido{background:rgba(255,79,106,.12);color:var(--red);border:1px solid rgba(255,79,106,.25)}
+  .b-cisco{background:rgba(124,92,252,.15);color:#a78bfa;border:1px solid rgba(124,92,252,.3)}
+  .b-territorio{background:rgba(0,229,255,.1);color:var(--accent);border:1px solid rgba(0,229,255,.2)}
+  .b-fuera{background:rgba(107,117,153,.1);color:var(--muted);border:1px solid var(--border)}
+  .b-alerta{background:rgba(255,79,106,.12);color:var(--red);border:1px solid rgba(255,79,106,.25)}
+  .b-tiempo{background:rgba(0,224,150,.12);color:var(--green);border:1px solid rgba(0,224,150,.25)}
+  .b-actualizo{background:rgba(0,229,255,.1);color:var(--accent);border:1px solid rgba(0,229,255,.2)}
+  /* CISCO TAG */
+  .cisco-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent2);margin-right:4px;vertical-align:middle}
+  /* CHARTS GRID */
+  .charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem}
+  .chart-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1rem}
+  .chart-title{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem}
+  .chart-box canvas{max-height:200px}
+  /* ANALYSIS GRID */
+  .analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+  .stat-block{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:1.1rem 1.2rem}
+  .stat-block-label{font-size:.63rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem}
+  .stat-block-value{font-family:var(--font-head);font-size:1.8rem;font-weight:800}
+  .stat-block-sub{font-size:.68rem;color:var(--muted);margin-top:.3rem}
+  /* PAGINATION */
+  .pagination{display:flex;gap:.4rem;justify-content:flex-end;margin-top:.75rem;align-items:center}
+  .page-btn{font-family:var(--font-mono);font-size:.68rem;padding:.25rem .55rem;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:2px;transition:all .15s}
+  .page-btn.active{background:rgba(0,229,255,.1);border-color:var(--accent);color:var(--accent)}
+  .page-btn:hover:not(.active){border-color:var(--muted)}
+  .page-info{font-size:.68rem;color:var(--muted);margin-right:.5rem}
+  /* TABS */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.2rem}
+  .tab{font-family:var(--font-mono);font-size:.73rem;padding:.55rem 1.1rem;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .tab:hover:not(.active){color:var(--text)}
+  .tab-panel{display:none}.tab-panel.active{display:block}
+  /* FOOTER */
+  footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:.65rem;border-top:1px solid var(--border);position:relative;z-index:1}
+  /* RESPONSIVE */
+  @media(max-width:600px){
+    header{padding:1rem}.kpi-value{font-size:1.2rem}
+    main{padding:.75rem}td,th{padding:.45rem .5rem}
+  }
+  /* SCROLL */
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+  /* ANIMATE IN */
+  .fade-in{animation:fadeIn .4s ease forwards}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <h1>BVS <span>Dashboard</span> · Cotizaciones 2026</h1>
+    </div>
+    <div class="header-meta">
+      Territorio I&amp;C · Walter Cedrón &nbsp;|&nbsp; <strong id="hdr-date">···</strong>
+    </div>
+  </div>
+</header>
+
+<!-- KPI BANNER -->
+<div class="kpi-banner" id="kpi-banner"></div>
+
+<main>
+
+  <!-- TABS PRINCIPALES -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('t1')">📋 Cotizaciones T1</button>
+    <button class="tab" onclick="switchTab('t5')">🎯 CRM T5</button>
+    <button class="tab" onclick="switchTab('cisco')">🔵 Análisis Cisco</button>
+    <button class="tab" onclick="switchTab('kpis')">📊 KPIs Integrados</button>
+  </div>
+
+  <!-- ===== TAB T1 ===== -->
+  <div id="tab-t1" class="tab-panel active">
+    <section>
+      <div class="section-header">
+        <span class="section-tag">T1</span>
+        <span class="section-title">Registro de Cotizaciones</span>
+        <span class="section-count" id="t1-count"></span>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="t1-search" placeholder="Buscar código, cliente, referencia…" oninput="renderT1()"/>
+        <select id="t1-estado" onchange="renderT1()">
+          <option value="">Todos los estados</option>
+          <option>Lograda</option><option>Por confirmar</option>
+          <option>Perdido</option><option>Se actualizó</option>
+        </select>
+        <select id="t1-territorio" onchange="renderT1()">
+          <option value="">Territorio</option>
+          <option value="Si">En Territorio</option>
+          <option value="No">Fuera</option>
+        </select>
+        <select id="t1-mes" onchange="renderT1()"><option value="">Todos los meses</option></select>
+        <select id="t1-segbvs" onchange="renderT1()">
+          <option value="">Segmento BVS</option>
+          <option>Foco</option><option>Captación</option><option>Fuera Territorio</option>
+        </select>
+        <button class="btn" id="t1-cisco-btn" onclick="toggleCiscoT1()">🔵 Solo Cisco</button>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-t1">
+          <thead><tr>
+            <th onclick="sortT1('Codigo')">Código ↕</th>
+            <th onclick="sortT1('Cliente')">Cliente ↕</th>
+            <th>Referencia</th>
+            <th onclick="sortT1('Monto')">Monto ↕</th>
+            <th onclick="sortT1('fecha_str')">Fecha ↕</th>
+            <th onclick="sortT1('Antiguedad_Dias')">Antigüedad ↕</th>
+            <th>Estado</th>
+            <th>Territorio</th>
+            <th>Seg. BVS</th>
+            <th>Mes</th>
+          </tr></thead>
+          <tbody id="tbody-t1"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pag-t1"></div>
+    </section>
+  </div>
+
+  <!-- ===== TAB T5 ===== -->
+  <div id="tab-t5" class="tab-panel">
+    <section>
+      <div class="section-header">
+        <span class="section-tag">T5</span>
+        <span class="section-title">Oportunidades CRM – Dynamics 365</span>
+        <span class="section-count" id="t5-count"></span>
+      </div>
+      <div class="filter-bar">
+        <input type="text" id="t5-search" placeholder="Buscar OP ID, cuenta, tema…" oninput="renderT5()"/>
+        <select id="t5-fab" onchange="renderT5()"><option value="">Fabricante</option></select>
+        <select id="t5-fase" onchange="renderT5()"><option value="">Fase</option></select>
+        <select id="t5-sem" onchange="renderT5()">
+          <option value="">Semáforo</option><option>A tiempo</option><option>Alerta</option>
+        </select>
+        <button class="btn" id="t5-cisco-btn" onclick="toggleCiscoT5()">🔵 Solo Cisco</button>
+      </div>
+      <div class="tbl-wrap">
+        <table id="tbl-t5">
+          <thead><tr>
+            <th onclick="sortT5('op_id')">OP ID ↕</th>
+            <th>Cuenta</th>
+            <th>Tema</th>
+            <th>Fabricante</th>
+            <th>Fase</th>
+            <th>FCST</th>
+            <th onclick="sortT5('ingresos')">Ingresos ↕</th>
+            <th>% Margen</th>
+            <th>% Éxito</th>
+            <th>Cierre Est.</th>
+            <th>Semáforo</th>
+            <th>Logrado T1</th>
+            <th>Por Conf. T1</th>
+          </tr></thead>
+          <tbody id="tbody-t5"></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pag-t5"></div>
+    </section>
+  </div>
+
+  <!-- ===== TAB CISCO ===== -->
+  <div id="tab-cisco" class="tab-panel">
+    <section>
+      <div class="section-header">
+        <span class="section-tag" style="--accent:#a78bfa">CISCO</span>
+        <span class="section-title">Análisis Cisco 2026</span>
+      </div>
+      <div class="analysis-grid" id="cisco-stats"></div>
+      <div class="charts-grid" style="margin-top:1.5rem">
+        <div class="chart-box">
+          <div class="chart-title">Monto Cisco vs No-Cisco (T1)</div>
+          <canvas id="ch-cisco-t1"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Ingresos Cisco por Fase (T5)</div>
+          <canvas id="ch-cisco-fase"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Distribución Estados Cisco T1</div>
+          <canvas id="ch-cisco-estados"></canvas>
+        </div>
+      </div>
+      <div class="section-header" style="margin-top:1rem">
+        <span class="section-title">Cotizaciones Cisco – T1</span>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr>
+          <th>Código</th><th>Cliente</th><th>Referencia</th>
+          <th>Monto</th><th>Estado</th><th>Territorio</th>
+        </tr></thead>
+        <tbody id="tbody-cisco-t1"></tbody></table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== TAB KPIS ===== -->
+  <div id="tab-kpis" class="tab-panel">
+    <section>
+      <div class="section-header">
+        <span class="section-tag">KPIs</span>
+        <span class="section-title">KPIs Integrados del Territorio</span>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-title">Avance vs Cuota 2026</div>
+          <canvas id="ch-cuota"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Cobertura Territorio</div>
+          <canvas id="ch-cobertura"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Funnel por Estado (T1 Territorio)</div>
+          <canvas id="ch-funnel"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Fabricantes T5 por Ingresos</div>
+          <canvas id="ch-fabricantes"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Cotizaciones por Mes</div>
+          <canvas id="ch-meses"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Fases Pipeline T5</div>
+          <canvas id="ch-fases"></canvas>
+        </div>
+      </div>
+      <div class="analysis-grid" id="kpis-detail"></div>
+    </section>
+  </div>
+
+</main>
+
+<footer>BVS Dashboard 2026 · Territorio I&amp;C · Datos actualizados desde Excel</footer>
+
+<script>
+// ═══════════════════ DATA ═══════════════════
+const T1_RAW = [{"Codigo": "GC-COT-WC-001-0126", "Cliente": "MINERA PEÑOLES", "Referencia": "COTIZACIÓN DE LICENCIAMIENTO PARA FIREWALL PA-440 – 01 AÑO", "Monto": 2190.0, "fecha_str": "2026-01-06", "Antiguedad_Dias": 69, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-002/0126", "Cliente": "MINERA PEÑOLES", "Referencia": "COTIZACIÓN DE LICENCIAMIENTO PARA FIREWALL PA-440 – 02 AÑOS", "Monto": 4269.0, "fecha_str": "2026-01-06", "Antiguedad_Dias": 69, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-003/0126", "Cliente": "FORD PERU", "Referencia": "SERVICIO DEPOT: HABILITACIÓN DE PUNTOS DE RED Y CABLEADO ESTRUCTURADO", "Monto": 85690.0, "fecha_str": "2026-01-06", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "FORD", "Segmento": "Comercio", "Segmento_BVS": "Captación", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-004/0126", "Cliente": "ANDES EXPRESS", "Referencia": "INFRAESTRUCTURA TECNOLÓGICA CON VIRTUALIZACIÓN", "Monto": 127590.0, "fecha_str": "2026-01-07", "Antiguedad_Dias": 68, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-005/0126", "Cliente": "PLUSPETROL NORTE", "Referencia": "SUSCRIPCIONES M365 (Hasta julio 2026)", "Monto": 490.0, "fecha_str": "2026-01-07", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "No", "Cuenta_Territorio": "PLUSPETROL NORTE", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "Q1", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-006/0126", "Cliente": "KALLPA", "Referencia": "RENOVACIÓN DE GARANTÍA STORAGE DELL – 01 AÑO", "Monto": 23555.0, "fecha_str": "2026-01-07", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "KALLPA", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-007/0126", "Cliente": "KALLPA", "Referencia": "RENOVACIÓN DE GARANTÍA STORAGE DELL – 03 AÑOS", "Monto": 45690.0, "fecha_str": "2026-01-07", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "KALLPA", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-008/0126", "Cliente": "SMI", "Referencia": "LICENCIAMIENTO ARUBA CLEAR PASS", "Monto": 29690.0, "fecha_str": "2026-01-07", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "SMI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-009/0126", "Cliente": "KALLPA", "Referencia": "RENOVACIÓN DE GARANTÍA STORAGE DELL – 03 AÑOS", "Monto": 30990.0, "fecha_str": "2026-01-08", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "KALLPA", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-010/0126", "Cliente": "BELCORP", "Referencia": "RENOVACIÓN DE SUSCRIPCIÓN VEEAM M365 – 01 año", "Monto": 6370.0, "fecha_str": "2026-01-09", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "BELCORP", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-011/0126", "Cliente": "STATKRAFT", "Referencia": "ADQUISICIÓN DE EQUIPOS CISCO", "Monto": 19590.0, "fecha_str": "2026-01-09", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-012/0126", "Cliente": "TEXTIL DEL VALLE", "Referencia": "SERVICIO DE MIGRACIÓN DE HPE AUTOLOADER.", "Monto": 1869.0, "fecha_str": "2026-01-09", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "TEXTIL DEL VALLE", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-013/0126", "Cliente": "HONDA SELVA DEL PERU", "Referencia": "EQUIPO SWITCH CISCO", "Monto": 1390.0, "fecha_str": "2026-01-09", "Antiguedad_Dias": 66, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-014/0126", "Cliente": "TRADI", "Referencia": "PROYECTO WIFI SEDE LA VICTORIA", "Monto": 17460.0, "fecha_str": "2026-01-12", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-015/0126", "Cliente": "STATKRAFT", "Referencia": "RENOVACIÓN DE SOPORTE Y GARANTÍA HPE", "Monto": 26690.0, "fecha_str": "2026-01-12", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-016/0126", "Cliente": "STATKRAFT", "Referencia": "RENOVACIÓN DE SOPORTE Y GARANTÍA HPE", "Monto": 26690.0, "fecha_str": "2026-01-13", "Antiguedad_Dias": 62, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-017/0126", "Cliente": "TOTAL ENERGIES", "Referencia": "EQUIPAMIENTO CISCO C9200L", "Monto": 9305.7, "fecha_str": "2026-01-13", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-018/0126", "Cliente": "TOTAL ENERGIES", "Referencia": "EQUIPAMIENTO CISCO C9300L", "Monto": 11034.3, "fecha_str": "2026-01-13", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-019/0126", "Cliente": "ENERGIGAS", "Referencia": "SUSCRIPCIONES MERAKI 01 AÑO", "Monto": 1260.0, "fecha_str": "2026-01-14", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "Q1", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-020/0126", "Cliente": "STATKRAFT", "Referencia": "ADQUISICIÓN DE EQUIPOS CISCO", "Monto": 22190.0, "fecha_str": "2026-01-14", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-021-0126", "Cliente": "RPP", "Referencia": "SERVICIO DIAGNÓSTICO SERVIDOR HPE BLADE", "Monto": 350.0, "fecha_str": "2026-01-15", "Antiguedad_Dias": 60, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "RPP", "Segmento": "Media", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-022/0126", "Cliente": "TRADI", "Referencia": "ACCESORIOS LAPTOPS HP", "Monto": 70.0, "fecha_str": "2026-01-19", "Antiguedad_Dias": 56, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-023/0126", "Cliente": "STATKRAFT", "Referencia": "ADQUISICIÓN DE EQUIPOS CISCO", "Monto": 22240.0, "fecha_str": "2026-01-19", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-024/0126", "Cliente": "APM TERMINALS", "Referencia": "COTIZAR PR 4214524 - LICENCIAS BACKUP EXEC", "Monto": 28230.0, "fecha_str": "2026-01-19", "Antiguedad_Dias": 56, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "APM TERMINALS", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-025/0126", "Cliente": "TRADI", "Referencia": "Provisión de equipos de cómputo HP Inc.", "Monto": 5525.0, "fecha_str": "2026-01-20", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-026/0126", "Cliente": "TRADI", "Referencia": "Provisión de equipos de cómputo HP Inc.", "Monto": 8287.5, "fecha_str": "2026-01-21", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-027/0126", "Cliente": "TRADI", "Referencia": "PROVISIÓN DE EQUIPOS APPLE.", "Monto": 5500.0, "fecha_str": "2026-01-22", "Antiguedad_Dias": 53, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-028/0126", "Cliente": "FORD PERU", "Referencia": "SERVICIO DEPOT: DESMONTAJE Y RECABLEADO", "Monto": 66990.0, "fecha_str": "2026-01-23", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "FORD", "Segmento": "Comercio", "Segmento_BVS": "Captación", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-029/0126", "Cliente": "RPP", "Referencia": "Provisión de equipos de cómputo HP Inc.", "Monto": 81961.0, "fecha_str": "2026-01-27", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "RPP", "Segmento": "Media", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-030/0126", "Cliente": "BELCORP", "Referencia": "Bolsa de horas para consultoría especializada Microsoft, HPE Aruba y Fortinet", "Monto": 8000.0, "fecha_str": "2026-01-28", "Antiguedad_Dias": 47, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "BELCORP", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-031/0126", "Cliente": "TRADI", "Referencia": "PROYECTO WIFI SEDE LA VICTORIA", "Monto": 18600.0, "fecha_str": "2026-01-28", "Antiguedad_Dias": 47, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-032/0126", "Cliente": "STATKRAFT", "Referencia": "ADQUISICIÓN DE EQUIPOS CISCO", "Monto": 8869.0, "fecha_str": "2026-01-30", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-033/0126", "Cliente": "PREMIUM FLOWERS", "Referencia": "SUSCRIPCIONES M365 x 12 meses", "Monto": 790.0, "fecha_str": "2026-01-30", "Antiguedad_Dias": 45, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Jan 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-034/0226", "Cliente": "TOTAL ENERGIES", "Referencia": "EQUIPAMIENTO CISCO C9200L", "Monto": 9532.4, "fecha_str": "2026-02-01", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-035/0226", "Cliente": "TOTAL ENERGIES", "Referencia": "EQUIPAMIENTO CISCO C9300L", "Monto": 11336.7, "fecha_str": "2026-02-01", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-035/0226", "Cliente": "CNPC PERU", "Referencia": "RENOVACIÓN LICENCIAMIENTO CITRIX", "Monto": 14280.0, "fecha_str": "2026-02-01", "Antiguedad_Dias": 43, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-036/0226", "Cliente": "STATKRAFT", "Referencia": "ADQUISICIÓN DE EQUIPOS CISCO", "Monto": 8320.0, "fecha_str": "2026-02-04", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-037/0226", "Cliente": "PANDERO", "Referencia": "RFP HARDWARE Y SOFTWARE CENTRO DE DATOS PANDERO", "Monto": 43990.0, "fecha_str": "2026-02-04", "Antiguedad_Dias": 40, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-038/0226", "Cliente": "MINERA ZAFRANAL", "Referencia": "REQUERIMIENTO DE COTIZACIÓN DE MATERIAL CISCO", "Monto": 334169.0, "fecha_str": "2026-02-04", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-039/0226", "Cliente": "TRADI", "Referencia": "UPS Y TRANSFORMADOR ESTABILIZADOR", "Monto": 8990.0, "fecha_str": "2026-02-05", "Antiguedad_Dias": 39, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-041/0226", "Cliente": "TRADI", "Referencia": "TRANSFORMADOR ESTABILIZADOR", "Monto": 4822.3, "fecha_str": "2026-02-05", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-042/0226", "Cliente": "TECAVI", "Referencia": "ADQUISICIÓN DE SUSCRIPCIÓN MS PROJECT", "Monto": 380.0, "fecha_str": "2026-02-05", "Antiguedad_Dias": 39, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-043/0226", "Cliente": "INTELIGO", "Referencia": "HABILITACIÓN DE UNA SOLUCIÓN DE CONTINGENCIA CENTRAL TELEFÓNICA", "Monto": 6313.42, "fecha_str": "2026-02-09", "Antiguedad_Dias": 35, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-044/0226", "Cliente": "TEXTIL DEL VALLE", "Referencia": "SERVICIO DE MIGRACIÓN DE HPE SERVIDOR Y ALMACENAMIENTO MSA", "Monto": 2220.0, "fecha_str": "2026-02-09", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "TEXTIL DEL VALLE", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-045/0226", "Cliente": "CROWN GAMING", "Referencia": "RENOVACIÓN DE GARANTÍA HPE Y VEEAM", "Monto": 15590.0, "fecha_str": "2026-02-10", "Antiguedad_Dias": 34, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-046/0226", "Cliente": "QUALITAS", "Referencia": "SERVIDOR HPE PROLIANT RACKEABLE", "Monto": 35780.0, "fecha_str": "2026-02-10", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "QUALITAS", "Segmento": "Financiero", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-047/0226", "Cliente": "FORD PERU", "Referencia": "SERVICIO DEPOT: MIGRACIÓN Y PROVISIÓN DE GABINETE EN DEPOT", "Monto": 6090.0, "fecha_str": "2026-02-12", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "FORD", "Segmento": "Comercio", "Segmento_BVS": "Captación", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-049/0226", "Cliente": "FORD PERU", "Referencia": "SERVICIO DEPOT: PUNTOS DE RED Y SERVICIOS DE CABLEADO ADICIONALES EN DC Y ALMACEN", "Monto": 172590.0, "fecha_str": "2026-02-13", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "FORD", "Segmento": "Comercio", "Segmento_BVS": "Captación", "Q_Cierre": "Q1", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-050/0226", "Cliente": "CONTUGAS", "Referencia": "SERVICIO RENOVACIÓN GARANTÍA CISCO – 09 SWITCHES CATALYST", "Monto": 8869.0, "fecha_str": "2026-02-13", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "CONTUGAS", "Segmento": "Servicios", "Segmento_BVS": "Captación", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-051/0226", "Cliente": "TEXTIL DEL VALLE", "Referencia": "LICENCIA CISCO MERAKI – 03 AÑOS", "Monto": 285.0, "fecha_str": "2026-02-16", "Antiguedad_Dias": 28, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TEXTIL DEL VALLE", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-052/0226", "Cliente": "TRADI", "Referencia": "UPS 10KVa PARA DATACENTER", "Monto": 10290.0, "fecha_str": "2026-02-16", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-053/0226", "Cliente": "BATA", "Referencia": "RENOVACIÓN DE GARANTÍA Y SUSCRIPCIONES ARUBA", "Monto": 22376.0, "fecha_str": "2026-02-17", "Antiguedad_Dias": 27, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-054/0226", "Cliente": "TRADI", "Referencia": "PROVISIÓN DE EQUIPOS DE CÓMPUTO HP INC.", "Monto": 64340.0, "fecha_str": "2026-02-18", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-055/0226", "Cliente": "TRADI", "Referencia": "PROVISIÓN DE EQUIPOS DE CÓMPUTO HP INC.", "Monto": 62865.0, "fecha_str": "2026-02-23", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-056/0226", "Cliente": "LAP", "Referencia": "RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO", "Monto": 30490.0, "fecha_str": "2026-02-24", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "Si", "Cuenta_Territorio": "LAP", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-057/0226", "Cliente": "CONTUGAS", "Referencia": "SERVICIO RENOVACIÓN GARANTÍA CISCO – 09 SWITCHES CATALYST", "Monto": 7020.0, "fecha_str": "2026-02-25", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "CONTUGAS", "Segmento": "Servicios", "Segmento_BVS": "Captación", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-058/0226", "Cliente": "TOYOTA", "Referencia": "SERVICIO DE APAGADO Y ENCENDIDO DATACENTER – SEDE BOCANEGRA", "Monto": 1360.0, "fecha_str": "2026-02-26", "Antiguedad_Dias": 18, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TOYOTA", "Segmento": "Comercio", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-059/0226", "Cliente": "BATA", "Referencia": "SERVICIO DE ASSESSMENT DE RED INALÁMBRICA EN SEDE VILLA EL SALVADOR - BATA", "Monto": 2690.0, "fecha_str": "2026-02-27", "Antiguedad_Dias": 17, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-060/0226", "Cliente": "FRESNILLO", "Referencia": "RENOVACIÓN DE GARANTÍA HPE – 03 MESES", "Monto": 6730.0, "fecha_str": "2026-02-27", "Antiguedad_Dias": 17, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-061/0226", "Cliente": "BATA", "Referencia": "SERVICIO DE REMEDIACION WIRELESS SEDE MIRAFLORES - BATA", "Monto": 2100.0, "fecha_str": "2026-02-27", "Antiguedad_Dias": 17, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-062/0226", "Cliente": "GESNEXT", "Referencia": "RENOVACIÓN DE SWITCHES CISCO", "Monto": 13890.0, "fecha_str": "2026-02-27", "Antiguedad_Dias": 17, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-063/0226", "Cliente": "STATKRAFT", "Referencia": "SISTEMA DE CONFERENCIA CISCO", "Monto": 19420.0, "fecha_str": "2026-02-27", "Antiguedad_Dias": 17, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "STATKRAFT PERU S.A.", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Feb 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-064/0326", "Cliente": "LAP", "Referencia": "RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO", "Monto": 30970.0, "fecha_str": "2026-03-02", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "Si", "Cuenta_Territorio": "LAP", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "Q1", "Mes": "Mar 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-065/0326", "Cliente": "TOTAL ENERGIES", "Referencia": "EQUIPAMIENTO CISCO C9300L", "Monto": 11569.0, "fecha_str": "2026-03-03", "Antiguedad_Dias": 0, "Estado": "Se actualizó", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-066/0326", "Cliente": "TOTAL ENERGIES", "Referencia": "EQUIPAMIENTO CISCO C9300L", "Monto": 11369.0, "fecha_str": "2026-03-04", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "Q1", "Mes": "Mar 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-067/0326", "Cliente": "SONY", "Referencia": "SWITCH CISCO C9300-24P-A", "Monto": 11716.0, "fecha_str": "2026-03-05", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "Q1", "Mes": "Mar 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-068/0326", "Cliente": "SONY", "Referencia": "EQUIPAMIENTO CÓMPUTO HP INC.", "Monto": 8203.5, "fecha_str": "2026-03-05", "Antiguedad_Dias": 0, "Estado": "Lograda", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "Q1", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-069/0326", "Cliente": "PUERTO DE PARACAS", "Referencia": "PROPUESTA INTEGRAL DE SOPORTE HW, SW E INFRA - 01 AÑO", "Monto": 233490.0, "fecha_str": "2026-03-09", "Antiguedad_Dias": 7, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "PUERTO DE PARACAS", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-070/0326", "Cliente": "METROCOLOR", "Referencia": "RENOVACIÓN DE GARANTÍA HPE – 06 MESES", "Monto": 5649.0, "fecha_str": "2026-03-11", "Antiguedad_Dias": 5, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-071/0326", "Cliente": "TRADI", "Referencia": "PROVISIÓN DE EQUIPOS DE CÓMPUTO HP INC.", "Monto": 94360.0, "fecha_str": "2026-03-11", "Antiguedad_Dias": 0, "Estado": "Perdido", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-072/0326", "Cliente": "LAP", "Referencia": "RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO", "Monto": 28149.0, "fecha_str": "2026-03-12", "Antiguedad_Dias": 4, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "LAP", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-073/0326", "Cliente": "TRADI", "Referencia": "SERVIDOR HPE PROLIANT TORRE – SEDE PIURA", "Monto": 6320.0, "fecha_str": "2026-03-12", "Antiguedad_Dias": 4, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-074/0326", "Cliente": "TOYOTA", "Referencia": "SERVICIO DE APAGADO Y ENCENDIDO DATACENTER – SEDE BOCANEGRA", "Monto": 1360.0, "fecha_str": "2026-03-12", "Antiguedad_Dias": 4, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TOYOTA", "Segmento": "Comercio", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-075/0326", "Cliente": "QUALITAS", "Referencia": "SOLUCIÓN CLOUD PARA BD ORACLE CON LICENCIA SUSCRIPCIÓN – 01 AÑO", "Monto": 54730.0, "fecha_str": "2026-03-13", "Antiguedad_Dias": 3, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "QUALITAS", "Segmento": "Financiero", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-076/0326", "Cliente": "QUALITAS", "Referencia": "SOLUCIÓN ONPREMISE PARA BD ORACLE CON LICENCIA PERPETUA – 01 AÑO ORACLE – 03 AÑOS HPE ", "Monto": 114025.0, "fecha_str": "2026-03-13", "Antiguedad_Dias": 3, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "QUALITAS", "Segmento": "Financiero", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-077/0326", "Cliente": "LAP", "Referencia": "RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO", "Monto": 35049.0, "fecha_str": "2026-03-13", "Antiguedad_Dias": 3, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "LAP", "Segmento": "Servicios", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": true}, {"Codigo": "GC-COT-WC-078/0326", "Cliente": "ABERCROMBIE", "Referencia": "EQUIPAMIENTO NETWORKING ARUBA", "Monto": 12260.0, "fecha_str": "2026-03-16", "Antiguedad_Dias": 0, "Estado": "Por confirmar", "En_Territorio": "No", "Cuenta_Territorio": "FUERA DE TERRITORIO", "Segmento": "Externo", "Segmento_BVS": "Fuera Territorio", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "GC-COT-WC-079/0326", "Cliente": "TRADI", "Referencia": "UPS 10KVa PARA DATACENTER", "Monto": 10290.0, "fecha_str": "2026-03-16", "Antiguedad_Dias": 0, "Estado": "Por confirmar", "En_Territorio": "Si", "Cuenta_Territorio": "TRADI", "Segmento": "Industria", "Segmento_BVS": "Foco", "Q_Cierre": "", "Mes": "Mar 2026", "isCisco": false}, {"Codigo": "⚠  CÓMO AGREGAR COTIZACIONES:  Añade filas nuevas al final de la tabla.  Solo debes ingresar: A=Codigo · B=Cliente · C=Referencia · D=Monto · E=Fecha_Envio · F=Antigüedad_Dias · G=Estado · I=Cuenta_Territorio (nombre del territorio, ej: FORD para FORD PERU).  ── Las columnas H, J, K, L se calculan automáticamente desde WcZ_Territorio I&C. ──  T2, T3 y T4 también se recalculan solos.", "Cliente": "", "Referencia": "", "Monto": 0.0, "fecha_str": "nan", "Antiguedad_Dias": 0, "Estado": "", "En_Territorio": "", "Cuenta_Territorio": "", "Segmento": "", "Segmento_BVS": "", "Q_Cierre": "", "Mes": "", "isCisco": false}];
+const T5_RAW = [{"op_id": "OP-00015724", "cuenta": "LAP", "tema": "RENOVACIÓN DE GARANTÍA CISCO - 01 AÑO", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 35049.0, "ganancia_abs": 5257.35, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-03-31", "semaforo": "Alerta", "isCisco": true, "logrado": 30970.0, "por_conf": 63198.0, "perdido": 0.0}, {"op_id": "OP-00015743", "cuenta": "TRADI", "tema": "SERVIDOR HPE PROLIANT TORRE – SEDE PIURA", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 6320.0, "ganancia_abs": 1137.6, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-03-31", "semaforo": "Alerta", "isCisco": false, "logrado": 13109.8, "por_conf": 49770.0, "perdido": 94360.0}, {"op_id": "OP-00015328", "cuenta": "PLUZ ENERGÍA", "tema": "RENOVACIÓN DE GARANTÍA HPE", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 27590.0, "ganancia_abs": 5518.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00012809", "cuenta": "PUERTO DE PARACAS", "tema": "RENOVACIÓN SERVICIO SOPORTE SW Y HW x 05 ANALISTAS", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 101689.37, "ganancia_abs": 19320.98, "pct_ganancia": 19.0, "pct_exito": 80.0, "fecha_cierre_str": "2026-04-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 233490.0, "perdido": 0.0}, {"op_id": "OP-00015742", "cuenta": "QUALITAS", "tema": "SOLUCIÓN CLOUD PARA BD ORACLE CON LICENCIA SUSCRIPCIÓN – 01 AÑO", "tecnologia": "ORACLE", "fabricante": "ORACLE", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 54730.0, "ganancia_abs": 9851.4, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "0", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00014967", "cuenta": "TEXTIL DEL VALLE", "tema": "ARRENDAMIENTO OPERATIVO HP Inc", "tecnologia": "Client", "fabricante": "HP inc.", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 120000.0, "ganancia_abs": 18000.0, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "Alerta", "isCisco": false, "logrado": 4089.0, "por_conf": 285.0, "perdido": 0.0}, {"op_id": "OP-00015668", "cuenta": "TRADI", "tema": "EQUIPAMIENTO SWITCHES ARUBA", "tecnologia": "Enterprise Networking", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 11000.0, "ganancia_abs": 1980.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "0", "isCisco": false, "logrado": 13109.8, "por_conf": 49770.0, "perdido": 94360.0}, {"op_id": "OP-00014901", "cuenta": "KALLPA", "tema": "SERVICIOS IMPLEMENTACIÓN DATACENTER RITTAL", "tecnologia": "Datacenter", "fabricante": "Rittal", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 25000.0, "ganancia_abs": 6250.0, "pct_ganancia": 25.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 54545.0}, {"op_id": "OP-00014920", "cuenta": "TRADI", "tema": "PROYECTO WIFI SEDE LA VICTORIA - 014/0126", "tecnologia": "Enterprise Networking", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 17460.0, "ganancia_abs": 3492.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 13109.8, "por_conf": 49770.0, "perdido": 94360.0}, {"op_id": "OP-00015393", "cuenta": "QUALITAS", "tema": "LICENCIAMIENTO ORACLE PARA SERVICIO EN NUBE", "tecnologia": "ORACLE", "fabricante": "ORACLE", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 50000.0, "ganancia_abs": 9000.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "Alerta", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00015691", "cuenta": "CLOROX", "tema": "MEJORAS EN SALA DE REUNIONES Y VIDEOCONFERENCIA", "tecnologia": "Colaboración", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 30000.0, "ganancia_abs": 5400.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-04-30", "semaforo": "0", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00014866", "cuenta": "STATKRAFT PERU S.A.", "tema": "RENOVACIÓN GARANTÍA HPE - 015/0126", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 26690.0, "ganancia_abs": 5338.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 8320.0, "por_conf": 46110.0, "perdido": 0.0}, {"op_id": "OP-00009142", "cuenta": "SMI", "tema": "CONSULTORÍA ARUBA CLEAR PASS (HA y Postura)", "tecnologia": "Enterprise Networking", "fabricante": "ARUBA", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 30000.0, "ganancia_abs": 5100.0, "pct_ganancia": 17.0, "pct_exito": 20.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 29690.0}, {"op_id": "OP-00014339", "cuenta": "PLUSPETROL PERU", "tema": "RENOVACIÓN TECNOLÓGICA HIGH VOLUME PARTE I", "tecnologia": "Client", "fabricante": "HP inc.", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 200000.0, "ganancia_abs": 30000.0, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00009108", "cuenta": "SMI", "tema": "AMPLIACIÓN SERVICIO NOC REGIONAL", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 80000.0, "ganancia_abs": 18400.0, "pct_ganancia": 23.0, "pct_exito": 50.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 29690.0}, {"op_id": "OP-00012808", "cuenta": "COES-SINAC", "tema": "EQUIPAMIENTO ROUTER PARA LAN EXTENDIDA", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 150000.0, "ganancia_abs": 30000.0, "pct_ganancia": 20.0, "pct_exito": 20.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00015000", "cuenta": "RPP", "tema": "EQUIPAMIENTO SWITCHES", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 9000.0, "ganancia_abs": 1620.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 350.0, "perdido": 81961.0}, {"op_id": "OP-00014474", "cuenta": "SMI", "tema": "SUSCRIPCIONES Y SERVICIOS FORTINET", "tecnologia": "Seguridad", "fabricante": "Fortinet", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 18269.0, "ganancia_abs": 3653.8, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 29690.0}, {"op_id": "OP-00015182", "cuenta": "LAP", "tema": "SERVICIO MIGRACIÓN DC T1 A DC T2", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 100000.0, "ganancia_abs": 20000.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 30970.0, "por_conf": 63198.0, "perdido": 0.0}, {"op_id": "OP-00012885", "cuenta": "CONTUGAS", "tema": "RENOVACIÓN TECNOLÓGICA SWITCHING", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 50000.0, "ganancia_abs": 9000.0, "pct_ganancia": 18.0, "pct_exito": 80.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 15889.0}, {"op_id": "OP-00015413", "cuenta": "QUALITAS", "tema": "RENOVACIÓN LICENCIAMIENTO ORACLE ONPREMISE", "tecnologia": "ORACLE", "fabricante": "ORACLE", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 50000.0, "ganancia_abs": 9000.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00015067", "cuenta": "BELCORP", "tema": "SERVICIO DE CONSULTORÍA MICROSOFT", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 8000.0, "ganancia_abs": 2000.0, "pct_ganancia": 25.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-05-29", "semaforo": "A tiempo", "isCisco": false, "logrado": 6370.0, "por_conf": 8000.0, "perdido": 0.0}, {"op_id": "OP-00015407", "cuenta": "PLUSPETROL PERU", "tema": "RENOVACIÓN SWITCHING CISCO - MALVINAS", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "2-Calificación", "fcst_status": "Upside", "ingresos": 75000.0, "ganancia_abs": 13500.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00015380", "cuenta": "PLUZ ENERGÍA", "tema": "SOLUCIÓN DE RESPALDO", "tecnologia": "Renovacion Servicios", "fabricante": "VEEAM", "fase": "2-Calificación", "fcst_status": "Upside", "ingresos": 45000.0, "ganancia_abs": 8100.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00011426", "cuenta": "GOODYEAR", "tema": "RENOVACIÓN TECNOLÓGICA NETWORKING", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 230000.0, "ganancia_abs": 50600.0, "pct_ganancia": 22.0, "pct_exito": 70.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00012883", "cuenta": "STATKRAFT PERU S.A.", "tema": "INFREAESTRUCTURA TECNOLÓGICA IT - HPE PARA LIMA Y LA OROYA", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 350000.0, "ganancia_abs": 63000.0, "pct_ganancia": 18.0, "pct_exito": 80.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 8320.0, "por_conf": 46110.0, "perdido": 0.0}, {"op_id": "OP-00014550", "cuenta": "CLOROX", "tema": "RENOVACIÓN SERVICIO OUTSOURCING 24M", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 45000.0, "ganancia_abs": 9000.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00014335", "cuenta": "QUALITAS", "tema": "ANALISTAS (PROGRAMADORM ANALISTA FUNCIONAL Y QA) X 12 MESES", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 60000.0, "ganancia_abs": 13800.0, "pct_ganancia": 23.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00014337", "cuenta": "QUALITAS", "tema": "SERVICIO MAPA DE CALOR OFICINA SAN ISIDRO", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 7000.0, "ganancia_abs": 1400.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00014655", "cuenta": "STATKRAFT PERU S.A.", "tema": "SWITCHES & ROUTER CISCO Y AP ARUBA", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 63990.0, "ganancia_abs": 8958.6, "pct_ganancia": 14.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": true, "logrado": 8320.0, "por_conf": 46110.0, "perdido": 0.0}, {"op_id": "OP-00013005", "cuenta": "CONSORCIO MINERO HORIZONTE", "tema": "RENOVACIÓN TECNOLÓGICA GREENLAKE", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 200000.0, "ganancia_abs": 36000.0, "pct_ganancia": 18.0, "pct_exito": 40.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00015406", "cuenta": "PLUSPETROL PERU", "tema": "RENOVACIÓN SWITCHING CISCO 9200 - 9300 IT/OT - PISCO-MALVINAS", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "2-Calificación", "fcst_status": "Upside", "ingresos": 100000.0, "ganancia_abs": 18000.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00014332", "cuenta": "KALLPA", "tema": "INFRAESTRUCTURA PROYECTO DR - DELL", "tecnologia": "Datacenter", "fabricante": "DELL", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 80000.0, "ganancia_abs": 12000.0, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-06-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 54545.0}, {"op_id": "OP-00014707", "cuenta": "TOYOTA", "tema": "RENOVACIÓN SERVICIO OUTSOURCING MESA DE AYUDA", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 250000.0, "ganancia_abs": 50000.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 2720.0, "perdido": 0.0}, {"op_id": "OP-00014333", "cuenta": "QUALITAS", "tema": "UN RECURSO ANALISTA MESA DE AYUDA X 12 MESES", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 20000.0, "ganancia_abs": 4600.0, "pct_ganancia": 23.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00015405", "cuenta": "SMI", "tema": "RENOVACIÓN SWITCHING CISCO", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "2-Calificación", "fcst_status": "Upside", "ingresos": 30000.0, "ganancia_abs": 5400.0, "pct_ganancia": 18.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 29690.0}, {"op_id": "OP-00009143", "cuenta": "SMI", "tema": "Proyecto SDWAN", "tecnologia": "Enterprise Networking", "fabricante": "ARUBA", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 50000.0, "ganancia_abs": 11000.0, "pct_ganancia": 22.0, "pct_exito": 40.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 29690.0}, {"op_id": "OP-00014338", "cuenta": "STATKRAFT PERU S.A.", "tema": "5360920 - REEMPLAZO DE 7 SWITCHES INDUSTRIAL DE COMUNICACIÓN DE GALLITO CIEGO", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "4-Negociación", "fcst_status": "Strong Upside", "ingresos": 35000.0, "ganancia_abs": 4900.0, "pct_ganancia": 14.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": true, "logrado": 8320.0, "por_conf": 46110.0, "perdido": 0.0}, {"op_id": "OP-00009760", "cuenta": "CONSORCIO MINERO HORIZONTE", "tema": "SERVICIO MESA DE AYUDA", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 50000.0, "ganancia_abs": 12500.0, "pct_ganancia": 25.0, "pct_exito": 30.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00015363", "cuenta": "APM TERMINALS", "tema": "NUEVO DC TERMINAL", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "1-Descubrimiento", "fcst_status": "Discovery", "ingresos": 400000.0, "ganancia_abs": 60000.0, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-07-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 28230.0, "perdido": 0.0}, {"op_id": "OP-00015074", "cuenta": "COES-SINAC", "tema": "RENOVACIÓN TECNOLÓGICA SWITCHING", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "2-Calificación", "fcst_status": "Upside", "ingresos": 250000.0, "ganancia_abs": 37500.0, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-08-28", "semaforo": "A tiempo", "isCisco": true, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00011433", "cuenta": "PLUSPETROL PERU", "tema": "RENOVACIÓN TECNOLÓGICA HIGH VOLUME PARTE II", "tecnologia": "Client", "fabricante": "HP inc.", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 350000.0, "ganancia_abs": 52500.0, "pct_ganancia": 15.0, "pct_exito": 60.0, "fecha_cierre_str": "2026-08-28", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 0.0, "perdido": 0.0}, {"op_id": "OP-00012881", "cuenta": "STATKRAFT PERU S.A.", "tema": "INFREAESTRUCTURA TECNOLÓGICA OT - HPE Y ARUBA PARA LIMA", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Strong Upside", "ingresos": 350000.0, "ganancia_abs": 63000.0, "pct_ganancia": 18.0, "pct_exito": 40.0, "fecha_cierre_str": "2026-08-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 8320.0, "por_conf": 46110.0, "perdido": 0.0}, {"op_id": "OP-00009789", "cuenta": "QUALITAS", "tema": "RENOVACIÓN TECNOLÓGICA SITE CONTINGENCIA", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Commit", "ingresos": 120000.0, "ganancia_abs": 28800.0, "pct_ganancia": 24.0, "pct_exito": 80.0, "fecha_cierre_str": "2026-08-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00014334", "cuenta": "QUALITAS", "tema": "ANALISTA DE PROCESOS TI X 03 MESES", "tecnologia": "Servicios Profesionales", "fabricante": "BVS", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 5000.0, "ganancia_abs": 1000.0, "pct_ganancia": 20.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-08-31", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 168755.0, "perdido": 35780.0}, {"op_id": "OP-00012787", "cuenta": "STATKRAFT PERU S.A.", "tema": "EQUIPAMIENTO CISCO ROOM BAR", "tecnologia": "Colaboración", "fabricante": "CISCO", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 14000.0, "ganancia_abs": 2520.0, "pct_ganancia": 18.0, "pct_exito": 30.0, "fecha_cierre_str": "2026-08-31", "semaforo": "A tiempo", "isCisco": true, "logrado": 8320.0, "por_conf": 46110.0, "perdido": 0.0}, {"op_id": "OP-00015488", "cuenta": "LAP", "tema": "RENOVACION DE GARANTIA CISCO", "tecnologia": "Enterprise Networking", "fabricante": "CISCO", "fase": "2-Calificación", "fcst_status": "Upside", "ingresos": 200000.0, "ganancia_abs": 30000.0, "pct_ganancia": 15.0, "pct_exito": 0.0, "fecha_cierre_str": "2026-09-30", "semaforo": "A tiempo", "isCisco": true, "logrado": 30970.0, "por_conf": 63198.0, "perdido": 0.0}, {"op_id": "OP-00013018", "cuenta": "TOYOTA", "tema": "RENOVACIÓN TECNOLÓGICA INFRAESTRUCTURA", "tecnologia": "Datacenter", "fabricante": "HPE", "fase": "3-Propuesta", "fcst_status": "Upside", "ingresos": 200000.0, "ganancia_abs": 36000.0, "pct_ganancia": 18.0, "pct_exito": 50.0, "fecha_cierre_str": "2026-09-30", "semaforo": "A tiempo", "isCisco": false, "logrado": 0.0, "por_conf": 2720.0, "perdido": 0.0}];
+const KPIS   = {"cuota": 3000000.0, "lograda": 268487.3, "por_confirmar": 883385.4199999999, "perdido": 646394.0, "avance_ytd": 0.08949576666666666, "kpis": {"Total Cuentas Territorio": 24.0, "Cuentas Con Propuesta": 14.0, "Cuentas Sin Propuesta": 10.0, "Porcentaje Cobertura Territorio": 0.5833, "Cuentas Foco Total": 16.0, "Cuentas Foco Con Propuesta": 12.0, "Porcentaje Cobertura Foco": 0.75, "Cuentas Captacion Total": 8.0, "Cuentas Captacion Con Propuesta": 2.0, "Porcentaje Cobertura Captación": 0.25, "Total Cotizaciones": 79.0, "Cotizaciones En Territorio": 50.0, "Cotizaciones Fuera Territorio": 28.0, "Monto Funnel Territorio": 1643590.8, "Monto Logrado Territorio": 235448.8, "Monto Por Confirmar Territorio": 600908.0, "Monto Perdido Territorio": 312225.0, "Monto Actualizado Territorio": 495009.0, "Monto Funnel Fuera Territorio": 702463.02, "Monto Logrado Fuera Territorio": 33038.5}};
+
+// ═══════════════════ STATE ══════════════════
+let t1Sort={key:'fecha_str',dir:-1}, t1Page=1, ciscoOnlyT1=false;
+let t5Sort={key:'ingresos',dir:-1}, t5Page=1, ciscoOnlyT5=false;
+const PAGE_SIZE=15;
+
+// ═══════════════════ UTILS ══════════════════
+const fmt = n => n==null?'—':'$'+Number(n).toLocaleString('es-PE',{minimumFractionDigits:0});
+const pct  = n => (n*100).toFixed(1)+'%';
+
+function badgeEstado(e){
+  const m={
+    'Lograda':'b-lograda','Por confirmar':'b-confirmar',
+    'Perdido':'b-perdido','Se actualizó':'b-actualizo'
+  };
+  return `<span class="badge ${m[e]||''}">${e||'—'}</span>`;
+}
+function badgeSem(s){
+  return s==='A tiempo'?`<span class="badge b-tiempo">✓ A tiempo</span>`
+        :s==='Alerta'  ?`<span class="badge b-alerta">⚠ Alerta</span>`
+        :`<span class="badge">${s||'—'}</span>`;
+}
+
+// ═══════════════════ HEADER ════════════════
+document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('es-PE',{day:'2-digit',month:'short',year:'numeric'});
+
+// ═══════════════════ KPI BANNER ════════════
+function buildKPIBanner(){
+  const k=KPIS;
+  const avance = k.avance_ytd||0;
+  const items=[
+    {label:'Cuota 2026',value:fmt(k.cuota),sub:'Objetivo anual',color:'var(--accent)',prog:null},
+    {label:'Lograda YTD',value:fmt(k.lograda),sub:pct(avance)+' avance',color:'var(--green)',prog:avance},
+    {label:'Por Confirmar',value:fmt(k.por_confirmar),sub:'Potencial activo',color:'var(--yellow)',prog:null},
+    {label:'Perdido YTD',value:fmt(k.perdido),sub:'Oportunidades cerradas',color:'var(--red)',prog:null},
+    {label:'Cuentas Territorio',value:k.kpis['Total Cuentas Territorio']||'—',sub:(((k.kpis['Porcentaje Cobertura Territorio']||0)*100).toFixed(0))+'% cobertura',color:'var(--accent2)',prog:k.kpis['Porcentaje Cobertura Territorio']},
+    {label:'Cotizaciones T1',value:k.kpis['Total Cotizaciones']||'—',sub:k.kpis['Cotizaciones En Territorio']+' en territorio',color:'var(--accent)',prog:null},
+    {label:'Funnel Territorio',value:fmt(k.kpis['Monto Funnel Territorio']),sub:'Activo en cartera',color:'var(--green)',prog:null},
+    {label:'Opors. CRM T5',value:T5_RAW.length,sub:T5_RAW.filter(r=>r.isCisco).length+' Cisco',color:'var(--accent2)',prog:null},
+  ];
+  const banner=document.getElementById('kpi-banner');
+  banner.innerHTML=items.map(it=>{
+    const prog=it.prog!=null?`<div class="prog-wrap"><div class="prog-bar" style="width:${Math.min(it.prog*100,100).toFixed(1)}%;background:${it.color}"></div></div>`:'';
+    return `<div class="kpi-card" style="--accent-color:${it.color}">
+      <div class="kpi-label">${it.label}</div>
+      <div class="kpi-value" style="color:${it.color}">${it.value}</div>
+      <div class="kpi-sub">${it.sub}</div>
+      ${prog}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════ TABS ══════════════════
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ═══════════════════ T1 ════════════════════
+function getT1Filtered(){
+  const q=(document.getElementById('t1-search').value||'').toLowerCase();
+  const estado=document.getElementById('t1-estado').value;
+  const terr=document.getElementById('t1-territorio').value;
+  const mes=document.getElementById('t1-mes').value;
+  const segbvs=document.getElementById('t1-segbvs').value;
+  return T1_RAW.filter(r=>{
+    if(ciscoOnlyT1 && !r.isCisco) return false;
+    if(estado && r.Estado!==estado) return false;
+    if(terr && r.En_Territorio!==terr) return false;
+    if(mes && r.Mes!==mes) return false;
+    if(segbvs && r.Segmento_BVS!==segbvs) return false;
+    if(q){
+      const hay=r.Codigo+r.Cliente+r.Referencia+r.Estado;
+      if(!hay.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=>{
+    let av=a[t1Sort.key]||'',bv=b[t1Sort.key]||'';
+    if(typeof av==='number') return (av-bv)*t1Sort.dir;
+    return av.localeCompare(bv)*t1Sort.dir;
+  });
+}
+
+function renderT1(){
+  const data=getT1Filtered();
+  const total=data.length;
+  const pages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(t1Page>pages) t1Page=1;
+  const slice=data.slice((t1Page-1)*PAGE_SIZE,t1Page*PAGE_SIZE);
+  document.getElementById('t1-count').textContent=`${total} cotizaciones`;
+  document.getElementById('tbody-t1').innerHTML=slice.map(r=>`<tr>
+    <td style="font-size:.65rem;color:var(--muted)">${r.Codigo}</td>
+    <td><strong>${r.Cliente}</strong></td>
+    <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis">
+      ${r.isCisco?'<span class="cisco-dot"></span>':''}${r.Referencia}</td>
+    <td style="color:var(--accent);font-weight:600">${fmt(r.Monto)}</td>
+    <td style="color:var(--muted)">${r.fecha_str}</td>
+    <td style="color:${r.Antiguedad_Dias>60?'var(--red)':r.Antiguedad_Dias>30?'var(--yellow)':'var(--green)'}">${r.Antiguedad_Dias>0?r.Antiguedad_Dias+'d':'—'}</td>
+    <td>${badgeEstado(r.Estado)}</td>
+    <td><span class="badge ${r.En_Territorio==='Si'?'b-territorio':'b-fuera'}">${r.En_Territorio==='Si'?'✓ Territorio':'Fuera'}</span></td>
+    <td><span class="badge" style="background:rgba(124,92,252,.1);color:#a78bfa;border:1px solid rgba(124,92,252,.2)">${r.Segmento_BVS||'—'}</span></td>
+    <td style="color:var(--muted)">${r.Mes||'—'}</td>
+  </tr>`).join('');
+  renderPagination('pag-t1',t1Page,pages,p=>{t1Page=p;renderT1();});
+}
+
+function sortT1(key){t1Sort={key,dir:t1Sort.key===key?-t1Sort.dir:1};t1Page=1;renderT1();}
+function toggleCiscoT1(){ciscoOnlyT1=!ciscoOnlyT1;document.getElementById('t1-cisco-btn').classList.toggle('active',ciscoOnlyT1);t1Page=1;renderT1();}
+
+// populate mes filter
+(()=>{
+  const meses=[...new Set(T1_RAW.map(r=>r.Mes).filter(Boolean))].sort();
+  const sel=document.getElementById('t1-mes');
+  meses.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+})();
+
+// ═══════════════════ T5 ════════════════════
+function getT5Filtered(){
+  const q=(document.getElementById('t5-search').value||'').toLowerCase();
+  const fab=document.getElementById('t5-fab').value;
+  const fase=document.getElementById('t5-fase').value;
+  const sem=document.getElementById('t5-sem').value;
+  return T5_RAW.filter(r=>{
+    if(ciscoOnlyT5 && !r.isCisco) return false;
+    if(fab && r.fabricante!==fab) return false;
+    if(fase && r.fase!==fase) return false;
+    if(sem && r.semaforo!==sem) return false;
+    if(q){
+      const hay=r.op_id+r.cuenta+r.tema+r.fabricante;
+      if(!hay.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b)=>{
+    let av=a[t5Sort.key]||0,bv=b[t5Sort.key]||0;
+    if(typeof av==='number') return (av-bv)*t5Sort.dir;
+    return String(av).localeCompare(String(bv))*t5Sort.dir;
+  });
+}
+
+function renderT5(){
+  const data=getT5Filtered();
+  const pages=Math.max(1,Math.ceil(data.length/PAGE_SIZE));
+  if(t5Page>pages) t5Page=1;
+  const slice=data.slice((t5Page-1)*PAGE_SIZE,t5Page*PAGE_SIZE);
+  document.getElementById('t5-count').textContent=`${data.length} oportunidades`;
+  document.getElementById('tbody-t5').innerHTML=slice.map(r=>`<tr>
+    <td style="color:var(--accent);font-size:.65rem">${r.op_id}</td>
+    <td><strong>${r.cuenta}</strong></td>
+    <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis">
+      ${r.isCisco?'<span class="cisco-dot"></span>':''}${r.tema}</td>
+    <td><span class="badge b-cisco">${r.fabricante}</span></td>
+    <td style="color:var(--muted);font-size:.67rem">${r.fase}</td>
+    <td style="color:var(--muted);font-size:.67rem">${r.fcst_status}</td>
+    <td style="color:var(--accent);font-weight:600">${fmt(r.ingresos)}</td>
+    <td style="color:${r.pct_ganancia>=20?'var(--green)':r.pct_ganancia>=10?'var(--yellow)':'var(--red)'}">${r.pct_ganancia.toFixed(1)}%</td>
+    <td style="color:var(--muted)">${r.pct_exito>0?r.pct_exito+'%':'—'}</td>
+    <td style="color:var(--muted);font-size:.67rem">${r.fecha_cierre_str}</td>
+    <td>${badgeSem(r.semaforo)}</td>
+    <td style="color:var(--green)">${r.logrado>0?fmt(r.logrado):'—'}</td>
+    <td style="color:var(--yellow)">${r.por_conf>0?fmt(r.por_conf):'—'}</td>
+  </tr>`).join('');
+  renderPagination('pag-t5',t5Page,pages,p=>{t5Page=p;renderT5();});
+}
+
+function sortT5(key){t5Sort={key,dir:t5Sort.key===key?-t5Sort.dir:1};t5Page=1;renderT5();}
+function toggleCiscoT5(){ciscoOnlyT5=!ciscoOnlyT5;document.getElementById('t5-cisco-btn').classList.toggle('active',ciscoOnlyT5);t5Page=1;renderT5();}
+
+// populate T5 filters
+(()=>{
+  const fabs=[...new Set(T5_RAW.map(r=>r.fabricante).filter(Boolean))].sort();
+  const fases=[...new Set(T5_RAW.map(r=>r.fase).filter(Boolean))].sort();
+  const sf=document.getElementById('t5-fab');
+  const sf2=document.getElementById('t5-fase');
+  fabs.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;sf.appendChild(o);});
+  fases.forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;sf2.appendChild(o);});
+})();
+
+// ═══════════════════ PAGINATION ════════════
+function renderPagination(id,current,total,cb){
+  const el=document.getElementById(id);
+  if(total<=1){el.innerHTML='';return;}
+  let html=`<span class="page-info">Pág ${current}/${total}</span>`;
+  html+=`<button class="page-btn" onclick="(${cb})(1)">«</button>`;
+  if(current>1) html+=`<button class="page-btn" onclick="(${cb})(${current-1})">‹</button>`;
+  const start=Math.max(1,current-2), end=Math.min(total,current+2);
+  for(let i=start;i<=end;i++)
+    html+=`<button class="page-btn${i===current?' active':''}" onclick="(${cb})(${i})">${i}</button>`;
+  if(current<total) html+=`<button class="page-btn" onclick="(${cb})(${current+1})">›</button>`;
+  html+=`<button class="page-btn" onclick="(${cb})(${total})">»</button>`;
+  el.innerHTML=html;
+}
+
+// ═══════════════════ CISCO ANALYSIS ════════
+function buildCiscoAnalysis(){
+  const ciscoT1=T1_RAW.filter(r=>r.isCisco);
+  const ciscoT5=T5_RAW.filter(r=>r.isCisco);
+  const montoC=ciscoT1.reduce((s,r)=>s+r.Monto,0);
+  const montoTotal=T1_RAW.reduce((s,r)=>s+r.Monto,0);
+  const ingresosC=ciscoT5.reduce((s,r)=>s+r.ingresos,0);
+  const ingresosTotal=T5_RAW.reduce((s,r)=>s+r.ingresos,0);
+  const logradaC=ciscoT1.filter(r=>r.Estado==='Lograda').reduce((s,r)=>s+r.Monto,0);
+
+  document.getElementById('cisco-stats').innerHTML=[
+    {label:'Cotizaciones Cisco T1',value:ciscoT1.length,sub:'de '+T1_RAW.length+' totales',color:'var(--accent2)'},
+    {label:'Monto Cisco T1',value:fmt(montoC),sub:(montoTotal>0?(montoC/montoTotal*100).toFixed(1):0)+'% del funnel',color:'var(--accent)'},
+    {label:'Logrado Cisco T1',value:fmt(logradaC),sub:ciscoT1.filter(r=>r.Estado==='Lograda').length+' operaciones',color:'var(--green)'},
+    {label:'Opors. Cisco CRM',value:ciscoT5.length,sub:'de '+T5_RAW.length+' en T5',color:'var(--accent2)'},
+    {label:'Ingresos Cisco T5',value:fmt(ingresosC),sub:(ingresosTotal>0?(ingresosC/ingresosTotal*100).toFixed(1):0)+'% del CRM',color:'var(--accent)'},
+    {label:'Meta Cisco 2026',value:'80%',sub:'de ventas objetivo',color:'var(--yellow)'},
+  ].map(s=>`<div class="stat-block">
+    <div class="stat-block-label">${s.label}</div>
+    <div class="stat-block-value" style="color:${s.color}">${s.value}</div>
+    <div class="stat-block-sub">${s.sub}</div>
+  </div>`).join('');
+
+  // Tabla cisco T1
+  document.getElementById('tbody-cisco-t1').innerHTML=ciscoT1.map(r=>`<tr>
+    <td style="font-size:.65rem;color:var(--muted)">${r.Codigo}</td>
+    <td><strong>${r.Cliente}</strong></td>
+    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">${r.Referencia}</td>
+    <td style="color:var(--accent)">${fmt(r.Monto)}</td>
+    <td>${badgeEstado(r.Estado)}</td>
+    <td><span class="badge ${r.En_Territorio==='Si'?'b-territorio':'b-fuera'}">${r.En_Territorio==='Si'?'✓':'Fuera'}</span></td>
+  </tr>`).join('') || '<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:1rem">Sin cotizaciones Cisco detectadas</td></tr>';
+
+  // Charts Cisco
+  const noC=montoTotal-montoC;
+  chartDonut('ch-cisco-t1',['Cisco','No Cisco'],[montoC,noC],['#7c5cfc','#1e2740']);
+
+  const faseMap={};
+  ciscoT5.forEach(r=>{faseMap[r.fase]=(faseMap[r.fase]||0)+r.ingresos;});
+  const fkeys=Object.keys(faseMap);
+  chartBar('ch-cisco-fase',fkeys,fkeys.map(k=>faseMap[k]),'#7c5cfc');
+
+  const estadoMap={};
+  ciscoT1.forEach(r=>{estadoMap[r.Estado]=(estadoMap[r.Estado]||0)+1;});
+  const ekeys=Object.keys(estadoMap);
+  chartDonut('ch-cisco-estados',ekeys,ekeys.map(k=>estadoMap[k]),['#00e096','#ffc946','#ff4f6a','#00e5ff']);
+}
+
+// ═══════════════════ KPIs CHARTS ═══════════
+function buildKPICharts(){
+  const k=KPIS.kpis;
+  // Cuota gauge
+  const lograda=KPIS.lograda, cuota=KPIS.cuota, porConf=KPIS.por_confirmar;
+  chartDonut('ch-cuota',
+    ['Lograda','Por Confirmar','Restante'],
+    [lograda,porConf,Math.max(0,cuota-lograda-porConf)],
+    ['#00e096','#ffc946','#1e2740']);
+
+  // Cobertura
+  chartDonut('ch-cobertura',
+    ['Foco c/propuesta','Foco sin propuesta','Captación c/p','Captación sin p'],
+    [k['Cuentas Foco Con Propuesta'],k['Cuentas Foco Total']-(k['Cuentas Foco Con Propuesta']||0),
+     k['Cuentas Captacion Con Propuesta'],k['Cuentas Captacion Total']-(k['Cuentas Captacion Con Propuesta']||0)],
+    ['#00e096','#1e2740','#00e5ff','#171d2e']);
+
+  // Funnel territorio
+  chartBar('ch-funnel',
+    ['Logrado','Por Conf.','Perdido','Actualizado'],
+    [k['Monto Logrado Territorio'],k['Monto Por Confirmar Territorio'],k['Monto Perdido Territorio'],k['Monto Actualizado Territorio']],
+    ['#00e096','#ffc946','#ff4f6a','#00e5ff']);
+
+  // Fabricantes T5
+  const fabMap={};
+  T5_RAW.forEach(r=>{if(r.fabricante) fabMap[r.fabricante]=(fabMap[r.fabricante]||0)+r.ingresos;});
+  const fabK=Object.keys(fabMap).sort((a,b)=>fabMap[b]-fabMap[a]).slice(0,8);
+  chartBar('ch-fabricantes',fabK,fabK.map(k=>fabMap[k]),'#00e5ff');
+
+  // Cotizaciones por mes
+  const mesMap={};
+  T1_RAW.forEach(r=>{if(r.Mes) mesMap[r.Mes]=(mesMap[r.Mes]||0)+1;});
+  const mKeys=Object.keys(mesMap).sort();
+  chartBar('ch-meses',mKeys,mKeys.map(k=>mesMap[k]),'#a78bfa');
+
+  // Fases T5
+  const faseMap2={};
+  T5_RAW.forEach(r=>{if(r.fase) faseMap2[r.fase]=(faseMap2[r.fase]||0)+r.ingresos;});
+  const fKeys2=Object.keys(faseMap2).sort((a,b)=>faseMap2[b]-faseMap2[a]);
+  chartBar('ch-fases',fKeys2,fKeys2.map(k=>faseMap2[k]),'#ffc946');
+
+  // KPIs detail
+  const kpis_items=[
+    {label:'Cobertura Territorio',value:(((k['Porcentaje Cobertura Territorio']||0)*100).toFixed(0))+'%',sub:'Cuentas con propuesta',color:'var(--accent)'},
+    {label:'Cobertura Foco',value:(((k['Porcentaje Cobertura Foco']||0)*100).toFixed(0))+'%',sub:k['Cuentas Foco Con Propuesta']+' de '+k['Cuentas Foco Total'],color:'var(--green)'},
+    {label:'Cobertura Captación',value:(((k['Porcentaje Cobertura Captación']||0)*100).toFixed(0))+'%',sub:k['Cuentas Captacion Con Propuesta']+' de '+k['Cuentas Captacion Total'],color:'var(--yellow)'},
+    {label:'Funnel Fuera Territorio',value:fmt(k['Monto Funnel Fuera Territorio']),sub:'Logrado: '+fmt(k['Monto Logrado Fuera Territorio']),color:'var(--muted)'},
+    {label:'Total Cotizaciones',value:k['Total Cotizaciones'],sub:k['Cotizaciones En Territorio']+' territorio · '+k['Cotizaciones Fuera Territorio']+' fuera',color:'var(--accent)'},
+    {label:'Avance YTD',value:(KPIS.avance_ytd*100).toFixed(2)+'%',sub:'vs cuota '+fmt(KPIS.cuota),color:'var(--green)'},
+  ];
+  document.getElementById('kpis-detail').innerHTML=kpis_items.map(s=>`<div class="stat-block">
+    <div class="stat-block-label">${s.label}</div>
+    <div class="stat-block-value" style="color:${s.color}">${s.value}</div>
+    <div class="stat-block-sub">${s.sub}</div>
+  </div>`).join('');
+}
+
+// ═══════════════════ CHART HELPERS ═════════
+const CC={plugins:{legend:{labels:{color:'#6b7599',font:{family:'DM Mono',size:10}}},tooltip:{bodyFont:{family:'DM Mono'},titleFont:{family:'DM Mono'}}},scales:{}};
+
+function chartDonut(id,labels,data,colors){
+  const ctx=document.getElementById(id).getContext('2d');
+  new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},
+    options:{...CC,cutout:'65%',plugins:{...CC.plugins,legend:{position:'bottom',labels:{color:'#6b7599',font:{family:'DM Mono',size:10},boxWidth:10}}}}});
+}
+
+function chartBar(id,labels,data,color){
+  const ctx=document.getElementById(id).getContext('2d');
+  const colors=Array.isArray(color)?color:labels.map((_,i)=>
+    ['#00e5ff','#7c5cfc','#00e096','#ffc946','#ff4f6a','#a78bfa','#38bdf8','#f472b6'][i%8]);
+  new Chart(ctx,{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:3,borderWidth:0}]},
+    options:{...CC,plugins:{...CC.plugins,legend:{display:false}},
+      scales:{x:{ticks:{color:'#6b7599',font:{family:'DM Mono',size:9}},grid:{color:'rgba(30,39,64,.5)'}},
+               y:{ticks:{color:'#6b7599',font:{family:'DM Mono',size:9},callback:v=>v>=1000?'$'+(v/1000).toFixed(0)+'K':v},grid:{color:'rgba(30,39,64,.5)'}}}
+    }});
+}
+
+// ═══════════════════ INIT ══════════════════
+buildKPIBanner();
+renderT1();
+renderT5();
+buildCiscoAnalysis();
+buildKPICharts();
+</script>
+</body>
+</html>

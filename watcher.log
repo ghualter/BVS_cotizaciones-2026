@@ -278,3 +278,29 @@
 error: failed to push some refs to 'https://github.com/ghualter/BVS_cotizaciones-2026.git'
 03:21:51  [OK]    Listo.
 
+03:41:59  =======================================================
+03:41:59  [WATCH]  Watcher v2.0 iniciado
+03:41:59     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+03:41:59     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+03:41:59     HTML  : index.html
+03:41:59     Secciones: T1 · T5 · Renovaciones · Histórico · KPIs
+03:41:59     Esperando cambios... (Ctrl+C para detener)
+03:41:59  =======================================================
+03:42:37  
+[CAMBIO] Cambio detectado en el Excel...
+03:42:37     Excel abierto, esperando... (0s)
+03:42:42     Excel abierto, esperando... (5s)
+03:42:47     Excel abierto, esperando... (10s)
+03:42:52     Excel abierto, esperando... (15s)
+03:42:57     Excel abierto, esperando... (20s)
+03:43:02     Archivo libre → procesando...
+03:43:02  [EXCEL] Leyendo Excel...
+03:43:03     T1: 79 cotizaciones
+03:43:03     T5: 47 oportunidades CRM
+03:43:03     Hist 2024: 97 ops = $3,114,008
+03:43:03     Hist 2025: 90 ops = $2,083,935
+03:43:03     Hist 2026: 14 ops = $268,877
+03:43:03     KPIs: logrado=$382,512 / cuota=$3,000,000
+03:43:03  [HTML]  Actualizando HTML...
+03:43:03     HTML actualizado (209,122 chars)
+03:43:03  [GIT]   Haciendo push...

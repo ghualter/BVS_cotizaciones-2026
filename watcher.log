@@ -1,0 +1,280 @@
+23:19:42  =======================================================
+23:19:42  [WATCH]  Watcher iniciado
+23:19:42     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+23:19:42     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+23:19:42     HTML  : index.html
+23:19:42     Esperando cambios en el Excel... (Ctrl+C para detener)
+23:19:42  =======================================================
+23:21:19  
+[CAMBIO] Cambio detectado en el Excel -> procesando...
+23:21:19  [EXCEL] Leyendo Excel...
+23:21:19     [ERROR] Error leyendo Excel: [Errno 13] Permission denied: 'D:\\OneDrive - BVS TELEVISION SRL\\@COMERCIAL\\2026\\WcZ_Oportunidades CRM\\WcZ_Registro Cotizaciones 2026.xlsx'
+23:22:00  
+[CAMBIO] Cambio detectado en el Excel -> procesando...
+23:22:00  [EXCEL] Leyendo Excel...
+23:22:00     [ERROR] Error leyendo Excel: [Errno 13] Permission denied: 'D:\\OneDrive - BVS TELEVISION SRL\\@COMERCIAL\\2026\\WcZ_Oportunidades CRM\\WcZ_Registro Cotizaciones 2026.xlsx'
+23:22:51  
+[CAMBIO] Cambio detectado en el Excel -> procesando...
+23:22:51  [EXCEL] Leyendo Excel...
+23:22:52     OK T1=81 filas  T5=48 filas
+23:22:52  [HTML]  Actualizando index.html...
+23:22:52     OK HTML actualizado
+23:22:52  [GIT] Haciendo git push...
+23:22:56    [PUSH] Push exitoso -> GitHub Pages actualizado
+23:22:56  [OK] Listo.
+
+23:23:53  
+[STOP]  Watcher detenido.
+23:26:14  =======================================================
+23:26:14  [WATCH]  Watcher iniciado
+23:26:14     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+23:26:14     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+23:26:14     HTML  : index.html
+23:26:14     Esperando cambios en el Excel... (Ctrl+C para detener)
+23:26:14  =======================================================
+23:26:38  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:26:38     [ESPERA] Excel abierto, esperando que lo cierres... (0s)
+23:26:43     [ESPERA] Excel abierto, esperando que lo cierres... (5s)
+23:26:48     [ESPERA] Excel abierto, esperando que lo cierres... (10s)
+23:26:53     [ESPERA] Excel abierto, esperando que lo cierres... (15s)
+23:26:58     [ESPERA] Excel abierto, esperando que lo cierres... (20s)
+23:27:03     [ESPERA] Excel abierto, esperando que lo cierres... (25s)
+23:27:08     [ESPERA] Excel abierto, esperando que lo cierres... (30s)
+23:27:13     [ESPERA] Excel abierto, esperando que lo cierres... (35s)
+23:27:18     [ESPERA] Excel abierto, esperando que lo cierres... (40s)
+23:27:23     [ESPERA] Excel abierto, esperando que lo cierres... (45s)
+23:27:28     [ESPERA] Excel abierto, esperando que lo cierres... (50s)
+23:27:33     [ESPERA] Excel abierto, esperando que lo cierres... (55s)
+23:27:38     [ESPERA] Excel abierto, esperando que lo cierres... (60s)
+23:27:43     [OK] Excel cerrado -> procesando...
+23:27:43  [EXCEL] Leyendo Excel...
+23:27:44     OK T1=82 filas  T5=48 filas
+23:27:44  [HTML]  Actualizando index.html...
+23:27:44     OK HTML actualizado
+23:27:44  [GIT] Haciendo git push...
+23:27:47    [PUSH] Push exitoso -> GitHub Pages actualizado
+23:27:47  [OK] Listo.
+
+23:27:49  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:27:49     [OK] Excel cerrado -> procesando...
+23:27:49  [EXCEL] Leyendo Excel...
+23:27:49     OK T1=82 filas  T5=48 filas
+23:27:49  [HTML]  Actualizando index.html...
+23:27:49     OK HTML actualizado
+23:27:49  [GIT] Haciendo git push...
+23:27:50    [AVISO]  Commit falló: 
+23:27:50  [OK] Listo.
+
+23:28:27  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:28:27     [OK] Excel cerrado -> procesando...
+23:28:27  [EXCEL] Leyendo Excel...
+23:28:27     OK T1=82 filas  T5=48 filas
+23:28:27  [HTML]  Actualizando index.html...
+23:28:27     OK HTML actualizado
+23:28:27  [GIT] Haciendo git push...
+23:28:28    [AVISO]  Commit falló: 
+23:28:28  [OK] Listo.
+
+23:30:44  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:30:45     [OK] Excel cerrado -> procesando...
+23:30:45  [EXCEL] Leyendo Excel...
+23:30:45     OK T1=82 filas  T5=48 filas
+23:30:45  [HTML]  Actualizando index.html...
+23:30:45     OK HTML actualizado
+23:30:45  [GIT] Haciendo git push...
+23:30:47    [AVISO]  Commit falló: 
+23:30:47  [OK] Listo.
+
+23:38:27  =======================================================
+23:38:27  [WATCH]  Watcher iniciado
+23:38:27     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+23:38:27     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+23:38:27     HTML  : index.html
+23:38:27     Esperando cambios en el Excel... (Ctrl+C para detener)
+23:38:27  =======================================================
+23:39:02  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:39:02     [ESPERA] Excel abierto, esperando que lo cierres... (0s)
+23:39:07     [ESPERA] Excel abierto, esperando que lo cierres... (5s)
+23:39:12     [ESPERA] Excel abierto, esperando que lo cierres... (10s)
+23:39:17     [OK] Excel cerrado -> procesando...
+23:39:17  [EXCEL] Leyendo Excel...
+23:39:18     OK T1=83 filas  T5=48 filas
+23:39:18  [HTML]  Actualizando index.html...
+23:39:18     OK HTML actualizado
+23:39:18  [GIT] Haciendo git push...
+23:39:26    [PUSH] Push exitoso -> GitHub Pages actualizado
+23:39:26  [OK] Listo.
+
+23:39:27  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:39:27     [OK] Excel cerrado -> procesando...
+23:39:27  [EXCEL] Leyendo Excel...
+23:39:28     OK T1=83 filas  T5=48 filas
+23:39:28  [HTML]  Actualizando index.html...
+23:39:28     OK HTML actualizado
+23:39:28  [GIT] Haciendo git push...
+23:39:28    [AVISO]  Commit falló: 
+23:39:28  [OK] Listo.
+
+23:41:04  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:41:04     [OK] Excel cerrado -> procesando...
+23:41:04  [EXCEL] Leyendo Excel...
+23:41:05     OK T1=83 filas  T5=48 filas
+23:41:05  [HTML]  Actualizando index.html...
+23:41:05     OK HTML actualizado
+23:41:05  [GIT] Haciendo git push...
+23:41:05    [AVISO]  Commit falló: 
+23:41:05  [OK] Listo.
+
+23:49:22  =======================================================
+23:49:22  [WATCH]  Watcher iniciado
+23:49:22     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+23:49:22     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+23:49:22     HTML  : index.html
+23:49:22     Esperando cambios en el Excel... (Ctrl+C para detener)
+23:49:22  =======================================================
+23:49:38  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:49:38     [ESPERA] Excel abierto, esperando que lo cierres... (0s)
+23:49:43     [ESPERA] Excel abierto, esperando que lo cierres... (5s)
+23:49:48     [OK] Excel cerrado -> procesando...
+23:49:48  [EXCEL] Leyendo Excel...
+23:49:49     OK T1=79 filas  T5=48 filas
+23:49:49  [HTML]  Actualizando index.html...
+23:49:49     OK HTML actualizado
+23:49:49  [GIT] Haciendo git push...
+23:49:54    [PUSH] Push exitoso -> GitHub Pages actualizado
+23:49:54  [OK] Listo.
+
+23:49:55  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:49:55     [OK] Excel cerrado -> procesando...
+23:49:55  [EXCEL] Leyendo Excel...
+23:49:55     OK T1=79 filas  T5=48 filas
+23:49:55  [HTML]  Actualizando index.html...
+23:49:55     OK HTML actualizado
+23:49:55  [GIT] Haciendo git push...
+23:49:55    [AVISO]  Commit falló: 
+23:49:55  [OK] Listo.
+
+23:54:02  =======================================================
+23:54:02  [WATCH]  Watcher iniciado
+23:54:02     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+23:54:02     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+23:54:02     HTML  : index.html
+23:54:02     Esperando cambios en el Excel... (Ctrl+C para detener)
+23:54:02  =======================================================
+23:54:16  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:54:16     [ESPERA] Excel abierto, esperando que lo cierres... (0s)
+23:54:21     [ESPERA] Excel abierto, esperando que lo cierres... (5s)
+23:54:26     [OK] Excel cerrado -> procesando...
+23:54:26  [EXCEL] Leyendo Excel...
+23:54:27     OK T1=79 filas  T5=48 filas
+23:54:27  [HTML]  Actualizando index.html...
+23:54:27     OK HTML actualizado
+23:54:27  [GIT] Haciendo git push...
+23:54:30    [PUSH] Push exitoso -> GitHub Pages actualizado
+23:54:30  [OK] Listo.
+
+23:54:32  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+23:54:32     [OK] Excel cerrado -> procesando...
+23:54:32  [EXCEL] Leyendo Excel...
+23:54:32     OK T1=79 filas  T5=48 filas
+23:54:32  [HTML]  Actualizando index.html...
+23:54:33     OK HTML actualizado
+23:54:33  [GIT] Haciendo git push...
+23:54:33    [AVISO]  Commit falló: 
+23:54:33  [OK] Listo.
+
+00:03:51  =======================================================
+00:03:51  [WATCH]  Watcher iniciado
+00:03:51     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro Cotizaciones 2026.xlsx
+00:03:51     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+00:03:51     HTML  : index.html
+00:03:51     Esperando cambios en el Excel... (Ctrl+C para detener)
+00:03:51  =======================================================
+00:04:06  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+00:04:06     [ESPERA] Excel abierto, esperando que lo cierres... (0s)
+00:04:11     [ESPERA] Excel abierto, esperando que lo cierres... (5s)
+00:04:16     [ESPERA] Excel abierto, esperando que lo cierres... (10s)
+00:04:21     [ESPERA] Excel abierto, esperando que lo cierres... (15s)
+00:04:26     [ESPERA] Excel abierto, esperando que lo cierres... (20s)
+00:04:31     [ESPERA] Excel abierto, esperando que lo cierres... (25s)
+00:04:36     [ESPERA] Excel abierto, esperando que lo cierres... (30s)
+00:04:41     [ESPERA] Excel abierto, esperando que lo cierres... (35s)
+00:04:46     [ESPERA] Excel abierto, esperando que lo cierres... (40s)
+00:04:51     [ESPERA] Excel abierto, esperando que lo cierres... (45s)
+00:04:56     [ESPERA] Excel abierto, esperando que lo cierres... (50s)
+00:05:01     [ESPERA] Excel abierto, esperando que lo cierres... (55s)
+00:05:06     [ESPERA] Excel abierto, esperando que lo cierres... (60s)
+00:05:11     [ESPERA] Excel abierto, esperando que lo cierres... (65s)
+00:05:16     [ESPERA] Excel abierto, esperando que lo cierres... (70s)
+00:05:21     [ESPERA] Excel abierto, esperando que lo cierres... (75s)
+00:05:26     [ESPERA] Excel abierto, esperando que lo cierres... (80s)
+00:05:31     [ESPERA] Excel abierto, esperando que lo cierres... (85s)
+00:05:36     [ESPERA] Excel abierto, esperando que lo cierres... (90s)
+00:05:41     [ESPERA] Excel abierto, esperando que lo cierres... (95s)
+00:05:46     [ESPERA] Excel abierto, esperando que lo cierres... (100s)
+00:05:51     [ESPERA] Excel abierto, esperando que lo cierres... (105s)
+00:05:56     [ESPERA] Excel abierto, esperando que lo cierres... (110s)
+00:06:01     [ESPERA] Excel abierto, esperando que lo cierres... (115s)
+00:06:06     [ESPERA] Excel abierto, esperando que lo cierres... (120s)
+00:06:11     [ESPERA] Excel abierto, esperando que lo cierres... (125s)
+00:06:16     [ESPERA] Excel abierto, esperando que lo cierres... (130s)
+00:06:21     [ESPERA] Excel abierto, esperando que lo cierres... (135s)
+00:06:26     [ESPERA] Excel abierto, esperando que lo cierres... (140s)
+00:06:31     [ESPERA] Excel abierto, esperando que lo cierres... (145s)
+00:06:36     [OK] Excel cerrado -> procesando...
+00:06:36  [EXCEL] Leyendo Excel...
+00:06:37     OK T1=79 filas  T5=47 filas
+00:06:37  [HTML]  Actualizando index.html...
+00:06:37     OK HTML actualizado
+00:06:37  [GIT] Haciendo git push...
+00:06:40    [PUSH] Push exitoso -> GitHub Pages actualizado
+00:06:40  [OK] Listo.
+
+00:06:41  
+[CAMBIO] Cambio detectado en el Excel -> esperando que cierres el Excel...
+00:06:41     [OK] Excel cerrado -> procesando...
+00:06:41  [EXCEL] Leyendo Excel...
+00:06:42     OK T1=79 filas  T5=47 filas
+00:06:42  [HTML]  Actualizando index.html...
+00:06:42     OK HTML actualizado
+00:06:42  [GIT] Haciendo git push...
+00:06:42    [AVISO]  Commit falló: 
+00:06:42  [OK] Listo.
+
+03:21:14  =======================================================
+03:21:14  [WATCH]  Watcher v2.0 iniciado
+03:21:14     Excel : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\WcZ_Registro_Cotizaciones_2026.xlsx
+03:21:14     Repo  : D:\OneDrive - BVS TELEVISION SRL\@COMERCIAL\2026\WcZ_Oportunidades CRM\BVS_Cotizaciones_2026
+03:21:14     HTML  : index.html
+03:21:14     Secciones: T1 · T5 · Renovaciones · Histórico · KPIs
+03:21:14     Esperando cambios... (Ctrl+C para detener)
+03:21:14  =======================================================
+03:21:42  
+[CAMBIO] Cambio detectado en el Excel...
+03:21:42     Archivo libre → procesando...
+03:21:42  [EXCEL] Leyendo Excel...
+03:21:43     T1: 79 cotizaciones
+03:21:44     T5: 47 oportunidades CRM
+03:21:44     Hist 2024: 97 ops = $3,114,008
+03:21:44     Hist 2025: 90 ops = $2,083,935
+03:21:44     Hist 2026: 14 ops = $268,877
+03:21:44     KPIs: logrado=$268,487 / cuota=$3,000,000
+03:21:44  [HTML]  Actualizando HTML...
+03:21:44     HTML actualizado (104,498 chars)
+03:21:44  [GIT]   Haciendo push...
+03:21:51     ❌ Push falló: error: src refspec master does not match any
+error: failed to push some refs to 'https://github.com/ghualter/BVS_cotizaciones-2026.git'
+03:21:51  [OK]    Listo.
+

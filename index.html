@@ -7,14 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080d18;--surface:#0f1724;--surface2:#162030;--surface3:#1c2a3f;
-  --border:#1e2d45;--border2:#253550;
+  --bg:#f0f4f8;--surface:#ffffff;--surface2:#f1f5f9;--surface3:#e2e8f0;
+  --border:#cbd5e1;--border2:#94a3b8;
   --accent:#0ea5e9;--accent2:#38bdf8;--accent3:#7dd3fc;
   --green:#22c55e;--green2:#86efac;
   --yellow:#f59e0b;--yellow2:#fcd34d;
   --red:#ef4444;--red2:#fca5a5;
   --orange:#f97316;--purple:#a855f7;--purple2:#c084fc;
-  --text:#e2e8f0;--text2:#94a3b8;--text3:#4b6080;--text4:#2d4060;
+  --text:#0f172a;--text2:#334155;--text3:#64748b;--text4:#94a3b8;
   --cisco:#049fd9;--hpe:#01a982;
   --grad1:linear-gradient(135deg,#0ea5e9,#a855f7);
 }
@@ -177,8 +177,8 @@ tr:last-child td{border-bottom:none;}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:var(--surface2);}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-track{background:#f1f5f9;}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--text3);}
 </style>
 </head>
@@ -202,6 +202,7 @@ tr:last-child td{border-bottom:none;}
 <!-- NAV -->
 <div class="nav">
   <div class="nav-tab active" onclick="goTab('resumen',this)">📊 Resumen<span class="tab-badge">YTD</span></div>
+  <div class="nav-tab" onclick="goTab('kpis',this)">🎯 Mis KPIs</div>
   <div class="nav-tab" onclick="goTab('pipeline',this)">🎯 Pipeline CRM<span class="tab-badge" id="tb-t5">51</span></div>
   <div class="nav-tab" onclick="goTab('logradas',this)">✅ Logradas 2026<span class="tab-badge" id="tb-log">14</span></div>
   <div class="nav-tab" onclick="goTab('cisco',this)">🔵 Cisco</div>
@@ -250,6 +251,19 @@ tr:last-child td{border-bottom:none;}
       <div class="barchart" id="t1-chart"></div>
     </div>
   </div>
+</div>
+
+
+<!-- ══════════════════════ TAB: MIS KPIs ══════════════════════ -->
+<div class="tab-pane" id="tab-kpis">
+  <div class="sh">Mis KPIs — Acumulado 2026 <span class="sh-line"></span></div>
+  <div class="kpi-grid" id="kpi-dedicated"></div>
+
+  <div class="sh" style="margin-top:8px">Avance por Trimestre <span class="sh-line"></span></div>
+  <div class="grid-4" id="kpi-q-cards"></div>
+
+  <div class="sh" style="margin-top:8px">Semáforo de Indicadores <span class="sh-line"></span></div>
+  <div id="kpi-semaforo" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:20px"></div>
 </div>
 
 <!-- ══════════════════════ TAB: PIPELINE CRM ══════════════════════ -->
@@ -1003,11 +1017,99 @@ function getWeek(dateStr){
   return dateStr.slice(0,7);
 }
 
+
+// ══════════════════════════════════════════════
+// MIS KPIs
+// ══════════════════════════════════════════════
+function initKPIs(){
+  const k=D.kpis,av=k.avance_pct;
+  const avc=av>=.8?'var(--green)':av>=.5?'var(--yellow)':'var(--red)';
+  const mc=k.margen_ytd>=.22?'var(--green)':k.margen_ytd>=.15?'var(--yellow)':'var(--red)';
+
+  const kpis=[
+    {i:'💰',l:'Booking YTD',v:fmtK(k.booking_ytd),s:`Cuota anual: ${fmtK(k.cuota_anual)}`,b:fmtP0(av)+' de cuota',bc:av>=.8?'bg-green':av>=.5?'bg-yellow':'bg-red',c:avc,p:av},
+    {i:'📦',l:'Pipeline Total CRM',v:fmtK(k.pipeline_total),s:`${k.opps_total} oportunidades activas`,b:`${k.opps_commit} en Commit`,bc:'bg-green',c:'var(--accent)',p:Math.min(1,k.pipeline_total/k.cuota_anual/3)},
+    {i:'📊',l:'Margen Promedio',v:fmtP(k.margen_ytd),s:'Meta objetivo: 22%',b:k.margen_ytd>=.22?'✓ CUMPLE':'↓ BAJO META',bc:k.margen_ytd>=.22?'bg-green':'bg-red',c:mc,p:k.margen_ytd/.22},
+    {i:'🎯',l:'Monto Commit',v:fmtK(k.monto_commit),s:`${k.opps_commit} opps en Commit`,b:'FCST Commit',bc:'bg-green',c:'var(--green)',p:k.monto_commit/k.cuota_anual},
+    {i:'🔵',l:'Pipeline Cisco',v:fmtK(k.pipeline_cisco),s:fmtP0(k.pct_cisco)+' del pipeline total',b:k.pct_cisco>=.8?'✓ META OK':'↓ GAP CISCO',bc:k.pct_cisco>=.8?'bg-green':'bg-red',c:'var(--cisco)',p:k.pct_cisco/.8},
+    {i:'🤝',l:'Reuniones YTD',v:k.reuniones_ytd,s:'Meta: 4 reuniones/semana',b:k.reuniones_ytd>=48?'✓ OK':'En progreso',bc:k.reuniones_ytd>=48?'bg-green':'bg-yellow',c:'var(--purple)',p:k.reuniones_ytd/52},
+    {i:'✅',l:'Opps Logradas',v:k.logradas_count,s:`Ticket prom: ${fmtK(k.ticket_prom)}`,b:'YTD 2026',bc:'bg-blue',c:'var(--accent2)',p:null},
+    {i:'📈',l:'Avance Cuota',v:fmtP0(av),s:`${fmtK(k.booking_ytd)} de ${fmtK(k.cuota_anual)}`,b:av>=.8?'✓ EN META':av>=.25?'En camino':'↓ Rezagado',bc:av>=.8?'bg-green':av>=.25?'bg-yellow':'bg-red',c:avc,p:av},
+  ];
+
+  $$('kpi-dedicated').innerHTML=kpis.map(x=>`
+    <div class="kpi" style="--kc:${x.c}">
+      <div class="kpi-icon">${x.i}</div>
+      <div class="kpi-lbl">${x.l}</div>
+      <div class="kpi-val">${x.v}</div>
+      <div class="kpi-sub">${x.s}</div>
+      <span class="kpi-badge ${x.bc}">${x.b}</span>
+      ${x.p!==null?`<div class="pbar-bg"><div class="pbar-fill" style="width:${Math.min(100,x.p*100).toFixed(1)}%;background:${x.c}"></div></div>`:''}
+    </div>`).join('');
+
+  // Q avance cards
+  const qC={Q1:k.cuota_q1,Q2:k.cuota_q2,Q3:k.cuota_q3,Q4:k.cuota_q4};
+  const bkQ={
+    Q1:D.booking_2026_m['2026-01']||0+D.booking_2026_m['2026-02']||0+D.booking_2026_m['2026-03']||0,
+    Q2:D.booking_2026_m['2026-04']||0+D.booking_2026_m['2026-05']||0+D.booking_2026_m['2026-06']||0,
+    Q3:D.booking_2026_m['2026-07']||0+D.booking_2026_m['2026-08']||0+D.booking_2026_m['2026-09']||0,
+    Q4:D.booking_2026_m['2026-10']||0+D.booking_2026_m['2026-11']||0+D.booking_2026_m['2026-12']||0,
+  };
+  // Use YTD booking for Q1 since it's the active quarter
+  bkQ.Q1 = k.booking_ytd;
+
+  $$('kpi-q-cards').innerHTML=['Q1','Q2','Q3','Q4'].map(q=>{
+    const cuota=qC[q],bk=bkQ[q],pct=bk/cuota,pipe=D.pipeline_por_q.find(p=>p.q===q)?.monto||0;
+    const col=pct>=1?'var(--green)':pct>=.5?'var(--yellow)':'var(--red)';
+    const label={Q1:'Ene–Mar',Q2:'Abr–Jun',Q3:'Jul–Sep',Q4:'Oct–Dic'};
+    return`<div class="qcard">
+      <div class="qcard-label">${q} <span style="font-size:11px;color:var(--text3)">${label[q]}</span></div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:4px">Cuota: ${fmtK(cuota)}</div>
+      <div class="qcard-amt" style="color:${col}">${fmtK(bk)}</div>
+      <div class="qcard-detail">Pipeline: ${fmtK(pipe)}</div>
+      <div class="pbar-bg" style="margin-top:8px"><div class="pbar-fill" style="width:${Math.min(100,pct*100)}%;background:${col}"></div></div>
+      <div style="font-size:9px;color:var(--text3);margin-top:3px">${fmtP0(pct)} de cuota</div>
+    </div>`;
+  }).join('');
+
+  // Semáforo table
+  const indicadores=[
+    {nombre:'Cumplimiento de Cuota',valor:fmtP0(av),meta:'100%',real:av,umbral_ok:.8,umbral_alerta:.5,desc:'Booking vs Cuota Anual'},
+    {nombre:'Margen Promedio',valor:fmtP(k.margen_ytd),meta:'22%',real:k.margen_ytd/.22,umbral_ok:1,umbral_alerta:.7,desc:'Ganancia / Ingresos'},
+    {nombre:'Cobertura Pipeline',valor:`${(k.pipeline_total/k.cuota_anual).toFixed(1)}X`,meta:'3X',real:k.pipeline_total/k.cuota_anual/3,umbral_ok:1,umbral_alerta:.67,desc:'Pipeline vs Cuota'},
+    {nombre:'Pipeline Cisco',valor:fmtP0(k.pct_cisco),meta:'80%',real:k.pct_cisco/.8,umbral_ok:1,umbral_alerta:.6,desc:'% Cisco del Pipeline'},
+    {nombre:'Accuracy Commit',valor:fmtP0(k.monto_commit/k.cuota_anual),meta:'>20% cuota',real:k.monto_commit/k.cuota_anual/.2,umbral_ok:1,umbral_alerta:.5,desc:'Monto Commit / Cuota'},
+    {nombre:'Ritmo Reuniones',valor:(k.reuniones_ytd/12).toFixed(1)+'/sem',meta:'4/sem',real:(k.reuniones_ytd/12)/4,umbral_ok:1,umbral_alerta:.75,desc:'Promedio semanal YTD'},
+  ];
+
+  $$('kpi-semaforo').innerHTML=indicadores.map(ind=>{
+    const estado=ind.real>=ind.umbral_ok?'CUMPLE':ind.real>=ind.umbral_alerta?'CERCA':'BAJO';
+    const col=estado==='CUMPLE'?'var(--green)':estado==='CERCA'?'var(--yellow)':'var(--red)';
+    const bcls=estado==='CUMPLE'?'bg-green':estado==='CERCA'?'bg-yellow':'bg-red';
+    const pct=Math.min(100,ind.real*100);
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:14px">
+      <div style="width:44px;height:44px;border-radius:50%;background:${col}22;border:2px solid ${col};display:grid;place-items:center;flex-shrink:0">
+        <span style="font-size:16px">${estado==='CUMPLE'?'✅':estado==='CERCA'?'⚠️':'❌'}</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:12px;color:var(--text);margin-bottom:2px">${ind.nombre}</div>
+        <div style="font-size:10px;color:var(--text3);margin-bottom:6px">${ind.desc} · Meta: ${ind.meta}</div>
+        <div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:${col}">${ind.valor}</div>
+        <span class="kpi-badge ${bcls}" style="margin-top:4px">${estado}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ── INIT ───────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded',()=>{
   const now=new Date();
   $$('cur-date').textContent=now.toLocaleDateString('es-PE',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
   initResumen();
+  initKPIs();
   initPipeline();
   initLogradas();
   initCisco();

@@ -434,7 +434,15 @@ tr:last-child td{border-bottom:none;}
 
   <div class="grid-2">
     <div class="card">
-      <div class="card-title">Booking Mensual — Comparativo 3 Años<span class="card-title-sub">Ene–Mar activo en 2026</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div class="card-title" style="margin:0">Booking Mensual — Comparativo 3 Años<span class="card-title-sub" id="hist-chart-sub"></span></div>
+        <div id="hist-q-tabs" style="display:flex;gap:4px">
+          <button onclick="renderHistChart('Q1',this)" style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--accent);color:#fff;font-size:11px;cursor:pointer;font-weight:600">Q1</button>
+          <button onclick="renderHistChart('Q2',this)" style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer">Q2</button>
+          <button onclick="renderHistChart('Q3',this)" style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer">Q3</button>
+          <button onclick="renderHistChart('Q4',this)" style="padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;cursor:pointer">Q4</button>
+        </div>
+      </div>
       <div style="position:relative;height:180px;width:100%" id="hist-chart-wrap"></div>
     </div>
     <div class="card">
@@ -916,37 +924,85 @@ function initHistorico(){
     {y:'2026 YTD',v:fmtK(k.booking_ytd),s:'Ene–Mar · Q1',c:'var(--accent)'},
   ].map(x=>`<div class="hist-card"><div class="hist-year">${x.y}</div><div class="hist-val" style="color:${x.c}">${x.v}</div><div class="hist-sub">${x.s}</div></div>`).join('');
 
-  // Line chart comparison
-  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const d24=months.map((_,i)=>D.booking_2024_m[`2024-${String(i+1).padStart(2,'0')}`]||0);
-  const d25=months.map((_,i)=>D.booking_2025_m[`2025-${String(i+1).padStart(2,'0')}`]||0);
-  const d26=months.map((_,i)=>D.booking_2026_m[`2026-${String(i+1).padStart(2,'0')}`]||0);
-  const allVals=[...d24,...d25,...d26].filter(v=>v>0);
-  const mxV=Math.max(...allVals)||1;
+  // Grouped bar chart — por Q, con botones Q1/Q2/Q3/Q4
+  const _allMonthNames=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const _qRanges={Q1:[0,1,2],Q2:[3,4,5],Q3:[6,7,8],Q4:[9,10,11]};
 
-  const W=600,H=160,PL=40,PR=10,PT=10,PB=30;
-  const cw=W-PL-PR,ch=H-PT-PB;
-  function toX(i){return PL+i*(cw/11);}
-  function toY(v){return PT+ch-(v/mxV*ch);}
-  function makePath(data,color){
-    const pts=data.map((v,i)=>`${toX(i).toFixed(1)},${toY(v).toFixed(1)}`).join(' L ');
-    return`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" opacity=".9"/>`;
+  function renderHistChart(q, btn){
+    // Actualizar botones activos
+    document.querySelectorAll('#hist-q-tabs button').forEach(b=>{
+      b.style.background='var(--bg2)'; b.style.color='var(--text2)'; b.style.fontWeight='';
+    });
+    if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';btn.style.fontWeight='600';}
+
+    // Subtítulo
+    const _subEl=document.getElementById('hist-chart-sub');
+    if(_subEl) _subEl.textContent='Comparativo Mensual';
+
+    // Índices del Q — solo los que tengan datos en cualquiera de los 3 años
+    const qIdx=_qRanges[q];
+    const activeIdx=qIdx.filter(i=>{
+      const k=`${String(i+1).padStart(2,'0')}`;
+      return (D.booking_2024_m[`2024-${k}`]||0)>0 || (D.booking_2025_m[`2025-${k}`]||0)>0 || (D.booking_2026_m[`2026-${k}`]||0)>0;
+    });
+    const activeMonths=activeIdx.map(i=>_allMonthNames[i]);
+
+    const d24=activeIdx.map(i=>D.booking_2024_m[`2024-${String(i+1).padStart(2,'0')}`]||0);
+    const d25=activeIdx.map(i=>D.booking_2025_m[`2025-${String(i+1).padStart(2,'0')}`]||0);
+    const d26=activeIdx.map(i=>D.booking_2026_m[`2026-${String(i+1).padStart(2,'0')}`]||0);
+    const allVals=[...d24,...d25,...d26].filter(v=>v>0);
+    const mxV=Math.max(...allVals)||1;
+
+    const W=600,H=160,PL=55,PR=90,PT=10,PB=30;
+    const cw=W-PL-PR, ch=H-PT-PB;
+    const nGroups=activeMonths.length||1, nBars=3;
+    const groupW=cw/nGroups;
+    const barW=Math.min(groupW*0.22, 28);
+    const groupPad=(groupW - nBars*barW)/2;
+
+    function barX(gi,bi){return PL + gi*groupW + groupPad + bi*barW;}
+    function barH(v){return Math.max(1, v/mxV*ch);}
+    function barY(v){return PT+ch-barH(v);}
+
+    const colors=['#888','var(--yellow)','var(--accent)'];
+    const datasets=[d24,d25,d26];
+    const bars=datasets.map((data,bi)=>
+      data.map((v,gi)=>{
+        const x=barX(gi,bi),y=barY(v),h=barH(v),w=barW-1;
+        return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w}" height="${h.toFixed(1)}" fill="${colors[bi]}" rx="2" opacity="${bi===2?1:.75}">
+          <title>${['2024','2025','2026'][bi]} ${activeMonths[gi]}: $${(v/1000).toFixed(0)}K</title>
+        </rect>`;
+      }).join('')
+    ).join('');
+
+    const xLabels=activeMonths.map((m,gi)=>{
+      const cx=PL+gi*groupW+groupW/2;
+      return `<text x="${cx}" y="${H-5}" text-anchor="middle" fill="var(--text3)" font-size="10">${m}</text>`;
+    }).join('');
+
+    const grid=[0,.25,.5,.75,1].map(p=>{
+      const y=PT+ch*(1-p);
+      return `<line x1="${PL}" x2="${W-PR}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-width=".5"/>
+        <text x="${PL-4}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="8">${fmtK(mxV*p)}</text>`;
+    }).join('');
+
+    const legendX=W-PR+8;
+    const legend=[
+      `<rect x="${legendX}" y="10" width="10" height="10" fill="#888" rx="2"/>`,
+      `<text x="${legendX+13}" y="19" fill="var(--text3)" font-size="9">2024</text>`,
+      `<rect x="${legendX}" y="26" width="10" height="10" fill="var(--yellow)" rx="2"/>`,
+      `<text x="${legendX+13}" y="35" fill="var(--text3)" font-size="9">2025</text>`,
+      `<rect x="${legendX}" y="42" width="10" height="10" fill="var(--accent)" rx="2"/>`,
+      `<text x="${legendX+13}" y="51" fill="var(--text3)" font-size="9">2026</text>`,
+    ].join('');
+
+    $$('hist-chart-wrap').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">
+      ${grid}${bars}${xLabels}${legend}
+    </svg>`;
   }
-  const xLabels=months.map((m,i)=>`<text x="${toX(i)}" y="${H-5}" text-anchor="middle" fill="var(--text3)" font-size="9">${m}</text>`).join('');
-  const grid=[0,.25,.5,.75,1].map(p=>{const y=PT+ch*(1-p);return`<line x1="${PL}" x2="${W-PR}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-width=".5"/><text x="${PL-4}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="8">${fmtK(mxV*p)}</text>`;}).join('');
 
-  $$('hist-chart-wrap').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%">
-    ${grid}${xLabels}
-    ${makePath(d24,'var(--text3)')}
-    ${makePath(d25,'var(--yellow)')}
-    ${makePath(d26,'var(--accent)')}
-    <rect x="${W-80}" y="8" width="8" height="8" fill="var(--text3)" rx="2"/>
-    <text x="${W-68}" y="16" fill="var(--text3)" font-size="9">2024</text>
-    <rect x="${W-80}" y="22" width="8" height="8" fill="var(--yellow)" rx="2"/>
-    <text x="${W-68}" y="30" fill="var(--text3)" font-size="9">2025</text>
-    <rect x="${W-80}" y="36" width="8" height="8" fill="var(--accent)" rx="2"/>
-    <text x="${W-68}" y="44" fill="var(--text3)" font-size="9">2026</text>
-  </svg>`;
+  // Iniciar con Q1 activo
+  renderHistChart('Q1', document.querySelector('#hist-q-tabs button'));
 
   showHistFab(2024,$$('hist-fab-tabs').children[0]);
 

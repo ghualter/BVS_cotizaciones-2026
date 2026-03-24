@@ -302,6 +302,26 @@ tr:last-child td{border-bottom:none;}
 
   <div class="sh" style="margin-top:8px">Semáforo de Indicadores <span class="sh-line"></span></div>
   <div id="kpi-semaforo" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:20px"></div>
+
+  <!-- ══ MI SCOREBOARD PERSONAL ══ -->
+  <div class="sh" style="margin-top:8px">🏆 Mi Scoreboard — EU Andina · Qtr 1 2026 <span class="sh-line"></span></div>
+  <div id="sb-kpi-row" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px;margin-bottom:14px"></div>
+  <div class="card" style="padding:0;overflow:hidden;margin-bottom:20px">
+    <div style="background:#1a2355;color:#fff;padding:10px 18px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:space-between">
+      <span>📋 Detalle Scoreboard — Walter Cedrón Zárate</span>
+      <span style="background:rgba(255,255,255,.15);padding:2px 10px;border-radius:12px;font-size:11px;font-weight:400">Fuente: Excel T10_KPI_2026</span>
+    </div>
+    <table style="width:100%">
+      <thead><tr>
+        <th style="background:#f8fafc;font-size:10px;color:#64748b;padding:8px 16px;text-align:left;font-weight:700;text-transform:uppercase;letter-spacing:.7px">Indicador</th>
+        <th style="background:#f8fafc;font-size:10px;color:#64748b;text-align:right;padding:8px 16px;font-weight:700;text-transform:uppercase;letter-spacing:.7px">Valor Real</th>
+        <th style="background:#f8fafc;font-size:10px;color:#64748b;text-align:right;padding:8px 16px;font-weight:700;text-transform:uppercase;letter-spacing:.7px">Cuota / Meta</th>
+        <th style="background:#f8fafc;font-size:10px;color:#64748b;text-align:right;padding:8px 16px;font-weight:700;text-transform:uppercase;letter-spacing:.7px">Att %</th>
+        <th style="background:#f8fafc;font-size:10px;color:#64748b;text-align:center;padding:8px 16px;font-weight:700;text-transform:uppercase;letter-spacing:.7px">Estado</th>
+      </tr></thead>
+      <tbody id="sb-detalle-body"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ══════════════════════ TAB: PIPELINE CRM ══════════════════════ -->
@@ -345,6 +365,24 @@ tr:last-child td{border-bottom:none;}
 <!-- ══════════════════════ TAB: LOGRADAS 2026 ══════════════════════ -->
 <div class="tab-pane" id="tab-logradas">
   <div class="kpi-grid" id="log-kpis"></div>
+
+  <!-- Booking por Marca -->
+  <div class="sh" style="margin-top:4px">📦 Booking por Marca — Logradas 2026 <span class="sh-line"></span></div>
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">Distribución por Fabricante <span class="card-title-sub" id="log-marca-sub"></span></div>
+      <div style="display:flex;gap:20px;align-items:center">
+        <div style="position:relative;width:140px;height:140px;flex-shrink:0">
+          <canvas id="log-donut-marca" width="140" height="140"></canvas>
+        </div>
+        <div style="flex:1" id="log-marca-legend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Booking por Fabricante</div>
+      <div class="barchart" id="log-marca-bars"></div>
+    </div>
+  </div>
   <div class="tbl-wrap">
     <div class="tbl-header">
       <div class="tbl-header-title">Oportunidades Logradas 2026</div>
@@ -473,6 +511,31 @@ tr:last-child td{border-bottom:none;}
 
 <!-- ══════════════════════ TAB: CUENTAS ══════════════════════ -->
 <div class="tab-pane" id="tab-cuentas">
+
+  <!-- Cobertura de Territorio -->
+  <div class="sh">🗺️ Cobertura de Territorio — 24 Cuentas Asignadas <span class="sh-line"></span></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px" id="cob-kpi-cards"></div>
+  <div class="grid-2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title">Cobertura General del Territorio</div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="position:relative;width:130px;height:130px;flex-shrink:0">
+          <canvas id="cob-donut-general" width="130" height="130"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div id="cob-pct-lbl" style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--accent)">—</div>
+            <div style="font-size:9px;color:var(--text3)">Cubierto</div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div id="cob-general-rows" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cobertura Foco vs Captación</div>
+      <div id="cob-seg-rows" style="display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+  </div>
   <div class="tbl-wrap">
     <div class="tbl-header">
       <div class="tbl-header-title">Segmentación de Cuentas — Territorio I&amp;C</div>
@@ -1230,11 +1293,200 @@ function initKPIs(){
   }).join('');
 }
 
-// ── INIT ───────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════
+// MI SCOREBOARD PERSONAL — Datos reales T10_KPI_2026
+// ══════════════════════════════════════════════
+function initScoreboard(){
+  // Valores extraídos directamente de T10_KPI_2026 del Excel
+  const SB = {
+    bkg:        276677.3,
+    cuota_q1:   600000,
+    margen:     0.2034,
+    funnel:     1237440.8,
+    opps_commit:15,
+    reuniones:  41,
+    att_bkg:    0.4611,
+    att_funnel: 0.6875,
+    att_commit: 0.6000,
+    att_cobertura: 0.4583,
+    reunion_sem:3.154,
+    // De la imagen del scoreboard de tu jefa:
+    commit_val: 839279,
+    strong_pond:308687,
+    upside_pond:296700,
+    factor_x:   17.52,
+    ftof:       1631255,
+    ftof_att:   0.44,
+  };
+
+  function fmtM(v){ return v>=1000000?'$'+(v/1e6).toFixed(2)+'M':'$'+(v/1000).toFixed(0)+'K'; }
+  function attCol(v,ok=.8,warn=.5){ return v>=ok?'var(--green)':v>=warn?'var(--yellow)':'var(--red)'; }
+  function badge(lbl,col){ return `<span style="background:${col}22;color:${col};border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700">${lbl}</span>`; }
+
+  // KPI cards del scoreboard
+  const cards=[
+    {i:'📦',l:'BKG FY',       v:fmtM(SB.bkg),          s:`Cuota Q1: ${fmtM(SB.cuota_q1)}`,     att:SB.att_bkg,  ok:.8,  warn:.4, c:'var(--accent)'},
+    {i:'🎯',l:'Att BKG',      v:Math.round(SB.att_bkg*100)+'%', s:'vs Cuota Q1',                att:SB.att_bkg,  ok:.8,  warn:.4, c:attCol(SB.att_bkg)},
+    {i:'📊',l:'FtoF',         v:fmtM(SB.ftof),          s:'Funnel to Forecast',                  att:SB.ftof_att, ok:1,   warn:.5, c:'var(--purple)'},
+    {i:'✅',l:'Commit',        v:fmtM(SB.commit_val),   s:`${SB.opps_commit} opps`,              att:SB.att_commit,ok:.8, warn:.4, c:'var(--green)'},
+    {i:'💪',l:'Strong Pond.',  v:fmtM(SB.strong_pond),  s:'Pipeline ponderado',                  att:null, c:'var(--accent)'},
+    {i:'📈',l:'Upside Pond.',  v:fmtM(SB.upside_pond),  s:'Pipeline ponderado',                  att:null, c:'var(--yellow)'},
+    {i:'⚡',l:'Factor X',      v:SB.factor_x.toFixed(2)+'%', s:'EU Andina Q1',                  att:null, c:'var(--purple)'},
+  ];
+
+  $$('sb-kpi-row').innerHTML=cards.map(x=>{
+    const col=x.att!=null?attCol(x.att,x.ok,x.warn):x.c;
+    return`<div class="kpi" style="--kc:${col}">
+      <div class="kpi-icon">${x.i}</div>
+      <div class="kpi-lbl">${x.l}</div>
+      <div class="kpi-val">${x.v}</div>
+      <div class="kpi-sub">${x.s}</div>
+      ${x.att!=null?`<div class="pbar-bg"><div class="pbar-fill" style="width:${Math.min(100,x.att*100).toFixed(1)}%;background:${col}"></div></div>`:''}
+    </div>`;
+  }).join('');
+
+  // Tabla detalle
+  const rows=[
+    {ind:'BKG FY (Booking logrado)',     val:fmtM(SB.bkg),           ref:fmtM(SB.cuota_q1), att:SB.att_bkg,   ok:.8,  warn:.4},
+    {ind:'Cuotas AM (Q1)',               val:fmtM(SB.cuota_q1),      ref:'Meta asignada',    att:null},
+    {ind:'Att BKG FY',                   val:Math.round(SB.att_bkg*100)+'%', ref:'100%',     att:SB.att_bkg,   ok:.8,  warn:.4},
+    {ind:'FtoF (Funnel to Forecast)',    val:fmtM(SB.ftof),          ref:'—',                att:SB.ftof_att,  ok:1,   warn:.5},
+    {ind:'Att FtoF',                     val:Math.round(SB.ftof_att*100)+'%', ref:'100%',    att:SB.ftof_att,  ok:1,   warn:.5},
+    {ind:'Commit',                       val:fmtM(SB.commit_val),    ref:fmtM(SB.cuota_q1), att:SB.att_commit,ok:.8,  warn:.4},
+    {ind:'Strong Pond.',                 val:fmtM(SB.strong_pond),   ref:'—',                att:null},
+    {ind:'Upside Pond.',                 val:fmtM(SB.upside_pond),   ref:'—',                att:null},
+    {ind:'Factor X',                     val:SB.factor_x.toFixed(2)+'%', ref:'EU Andina',    att:null},
+  ];
+
+  $$('sb-detalle-body').innerHTML=rows.map((r,i)=>{
+    const col=r.att!=null?attCol(r.att,r.ok,r.warn):'var(--text4)';
+    const pctLbl=r.att!=null?Math.round(r.att*100)+'%':'—';
+    const estado=r.att!=null?(r.att>=(r.ok||.8)?'CUMPLE':r.att>=(r.warn||.5)?'CERCA':'BAJO'):null;
+    const estadoHtml=estado?badge(estado,col):'<span style="color:var(--text4);font-size:10px">—</span>';
+    return`<tr style="${i%2===0?'background:var(--surface2)':''}">
+      <td style="padding:9px 16px;font-size:12px;color:var(--text2);font-weight:500">${r.ind}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;font-size:13px;font-weight:700;padding:9px 16px;color:var(--text)">${r.val}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);padding:9px 16px">${r.ref}</td>
+      <td style="text-align:right;font-family:'DM Mono',monospace;font-size:11px;padding:9px 16px;color:${col}">${pctLbl}</td>
+      <td style="text-align:center;padding:9px 16px">${estadoHtml}</td>
+    </tr>`;
+  }).join('');
+}
 
 // ══════════════════════════════════════════════
-// MI PROYECCIÓN — T11
+// COBERTURA DE TERRITORIO — Datos reales T4_KPIs
 // ══════════════════════════════════════════════
+function initCobertura(){
+  // Datos reales de T4_KPIs del Excel
+  const COB = {
+    total: 24, con_propuesta: 16, sin_propuesta: 8,
+    pct_total: 0.6667,
+    foco_total: 16, foco_con: 13, pct_foco: 0.8125,
+    cap_total: 8,  cap_con: 3,   pct_cap: 0.375,
+  };
+
+  function pctBadge(v){ const col=v>=.7?'var(--green)':v>=.5?'var(--yellow)':'var(--red)'; return`<span style="background:${col}22;color:${col};border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700">${Math.round(v*100)}%</span>`; }
+
+  // KPI cards cobertura
+  $$('cob-kpi-cards').innerHTML=[
+    {i:'🏢',l:'Total Cuentas',      v:COB.total,                  s:'Territorio I&C', c:'var(--accent)'},
+    {i:'✅',l:'Con Oportunidad',     v:COB.con_propuesta,          s:`${Math.round(COB.pct_total*100)}% del territorio`, c:'var(--green)'},
+    {i:'❌',l:'Sin Oportunidad',     v:COB.sin_propuesta,          s:'Desatendidas', c:'var(--red)'},
+    {i:'🎯',l:'Cuentas Foco',        v:COB.foco_total,            s:`${Math.round(COB.pct_foco*100)}% cubiertas`, c:'var(--purple)'},
+    {i:'🔍',l:'Cuentas Captación',   v:COB.cap_total,             s:`${Math.round(COB.pct_cap*100)}% cubiertas`, c:'var(--yellow)'},
+  ].map(x=>`<div class="kpi" style="--kc:${x.c}">
+    <div class="kpi-icon">${x.i}</div>
+    <div class="kpi-lbl">${x.l}</div>
+    <div class="kpi-val">${x.v}</div>
+    <div class="kpi-sub">${x.s}</div>
+  </div>`).join('');
+
+  // Donut general
+  $$('cob-pct-lbl').textContent=Math.round(COB.pct_total*100)+'%';
+  const ctxG=document.getElementById('cob-donut-general');
+  if(ctxG) new Chart(ctxG,{type:'doughnut',data:{labels:['Con oportunidad','Sin oportunidad'],datasets:[{data:[COB.con_propuesta,COB.sin_propuesta],backgroundColor:['#22c55e','#ef4444'],borderWidth:0,hoverOffset:4}]},options:{responsive:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+c.raw+' ctas'}}},cutout:'72%'}});
+
+  $$('cob-general-rows').innerHTML=[
+    {l:'Con oportunidad', v:COB.con_propuesta, c:'var(--green)'},
+    {l:'Sin oportunidad', v:COB.sin_propuesta, c:'var(--red)'},
+  ].map(r=>`<div style="display:flex;align-items:center;gap:10px">
+    <div style="width:10px;height:10px;border-radius:2px;background:${r.c};flex-shrink:0"></div>
+    <span style="font-size:12px;color:var(--text2);flex:1">${r.l}</span>
+    <span style="font-family:'DM Mono',monospace;font-size:14px;font-weight:700;color:${r.c}">${r.v}</span>
+    <span style="font-size:11px;color:var(--text3)">ctas</span>
+  </div>`).join('');
+
+  // Foco vs Captación
+  $$('cob-seg-rows').innerHTML=[
+    {seg:'Foco',      total:COB.foco_total, con:COB.foco_con, pct:COB.pct_foco,  c:'var(--purple)'},
+    {seg:'Captación', total:COB.cap_total,  con:COB.cap_con,  pct:COB.pct_cap,   c:'var(--yellow)'},
+  ].map(s=>{
+    const col=s.pct>=.7?'var(--green)':s.pct>=.5?'var(--yellow)':'var(--red)';
+    return`<div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:9px;height:9px;border-radius:2px;background:${s.c}"></div>
+          <span style="font-size:12px;font-weight:600;color:var(--text)">${s.seg}</span>
+          <span style="font-size:11px;color:var(--text3)">${s.con}/${s.total} cuentas</span>
+        </div>
+        ${pctBadge(s.pct)}
+      </div>
+      <div class="pbar-bg"><div class="pbar-fill" style="width:${Math.round(s.pct*100)}%;background:${col}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text3)">
+        <span>0%</span><span>Meta: 70%</span><span>100%</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+// BOOKING POR MARCA — Datos reales Logradas 2026
+// ══════════════════════════════════════════════
+function initLogMarca(){
+  // Datos reales de la hoja "Logradas 2026" del Excel
+  const marcas=[
+    {m:'Otros',  v:172590},
+    {m:'CISCO',  v:71435},
+    {m:'HP inc.', v:16491},
+    {m:'VEEAM',  v:6370},
+    {m:'Rittal', v:4822.3},
+    {m:'HPE',    v:2220},
+    {m:'BVS',    v:1869},
+    {m:'Microsoft', v:490},
+    {m:'Schneider (APC)', v:390},
+  ];
+  const total=marcas.reduce((s,m)=>s+m.v,0);
+  const paleta=['#94a3b8','#049fd9','#01a982','#607196','#f97316','#0ea5e9','#a855f7','#f59e0b','#64748b'];
+
+  function fmtK(v){ return v>=1000?'$'+(v/1000).toFixed(1)+'K':'$'+v.toFixed(0); }
+
+  $$('log-marca-sub').textContent='Total: $'+( total/1000).toFixed(1)+'K';
+
+  // Donut
+  const ctxM=document.getElementById('log-donut-marca');
+  if(ctxM) new Chart(ctxM,{type:'doughnut',data:{labels:marcas.map(m=>m.m),datasets:[{data:marcas.map(m=>m.v),backgroundColor:paleta,borderWidth:0,hoverOffset:5}]},options:{responsive:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtK(c.raw)+' ('+Math.round(c.raw/total*100)+'%)'}}},cutout:'62%'}});
+
+  // Legend
+  $$('log-marca-legend').innerHTML=marcas.slice(0,6).map((m,i)=>{
+    const pct=Math.round(m.v/total*100);
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:9px;height:9px;border-radius:2px;background:${paleta[i]};flex-shrink:0"></div>
+      <span style="font-size:11px;color:var(--text2);flex:1">${m.m}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-right:4px">${pct}%</span>
+      <span style="font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--text)">${fmtK(m.v)}</span>
+    </div>`;
+  }).join('');
+
+  // Bars
+  const mx=marcas[0].v;
+  $$('log-marca-bars').innerHTML=marcas.map((m,i)=>`<div class="brow">
+    <div class="blabel" title="${m.m}">${m.m.length>14?m.m.slice(0,14)+'…':m.m}</div>
+    <div class="btrack"><div class="bfill" style="width:${(m.v/mx*100).toFixed(1)}%;background:${paleta[i]}"></div></div>
+    <div class="bval">${fmtK(m.v)} <span style="color:var(--text3);font-size:9px">${Math.round(m.v/total*100)}%</span></div>
+  </div>`).join('');
+}
+
+
 function initProyeccion(){
   const t11 = D.t11;
   const qLabels = {Q1:'Q1 — Ene–Mar 2026',Q2:'Q2 — Abr–Jun 2026',Q3:'Q3 — Jul–Sep 2026',Q4:'Q4 — Oct–Dic 2026'};
@@ -1406,11 +1658,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   $$('cur-date').textContent=now.toLocaleDateString('es-PE',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
   initResumen();
   initKPIs();
+  initScoreboard();
   initPipeline();
   initLogradas();
+  initLogMarca();
   initCisco();
   initHistorico();
   initCuentas();
+  initCobertura();
   initRenovaciones();
   initActividades();
   initProyeccion();

@@ -1368,9 +1368,9 @@ function initScoreboard(){
 
   // Tabla detalle
   const rows=[
-    {ind:'BKG FY (Booking logrado)',     val:fmtM(SB.bkg),           ref:fmtM(SB.cuota_q1), att:SB.att_bkg,   ok:.8,  warn:.4},
-    {ind:'Cuotas AM (Q1)',               val:fmtM(SB.cuota_q1),      ref:'Meta asignada',    att:null},
-    {ind:'Att BKG FY',                   val:Math.round(SB.att_bkg*100)+'%', ref:'100%',     att:SB.att_bkg,   ok:.8,  warn:.4},
+    {ind:'BKG FY (Booking logrado)',     val:fmtM(SB.bkg),           ref:fmtM(3000000)+' anual', att:SB.bkg/3000000,  ok:.8,  warn:.3},
+    {ind:'Cuota Anual AM',               val:fmtM(3000000),           ref:'Meta anual 2026',  att:SB.bkg/3000000, ok:.8, warn:.3},
+    {ind:'Att BKG FY',                   val:Math.round(SB.bkg/3000000*100)+'%', ref:'100% cuota anual', att:SB.bkg/3000000, ok:.8, warn:.3},
     {ind:'FtoF (Funnel to Forecast)',    val:fmtM(SB.ftof),          ref:'—',                att:SB.ftof_att,  ok:1,   warn:.5},
     {ind:'Att FtoF',                     val:Math.round(SB.ftof_att*100)+'%', ref:'100%',    att:SB.ftof_att,  ok:1,   warn:.5},
     {ind:'Commit',                       val:fmtM(SB.commit_val),    ref:fmtM(SB.cuota_q1), att:SB.att_commit,ok:.8,  warn:.4},

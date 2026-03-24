@@ -494,17 +494,22 @@ tr:last-child td{border-bottom:none;}
     </div>
   </div>
 
-  <div class="sh" style="margin-top:8px">Logradas 2025 — Últimas cerradas <span class="sh-line"></span></div>
+  <div class="sh" style="margin-top:8px">Últimas Oportunidades Logradas <span class="sh-line"></span></div>
   <div class="tbl-wrap">
     <div class="tbl-header">
-      <div class="tbl-header-title">Oportunidades Logradas 2025 (muestra)</div>
+      <div class="tbl-header-title" id="hist-log-title">Últimas 15 cerradas</div>
+      <div style="display:flex;gap:6px">
+        <div class="pbtn hist-log-btn" onclick="showHistLog(2024,this)">2024</div>
+        <div class="pbtn hist-log-btn" onclick="showHistLog(2025,this)">2025</div>
+        <div class="pbtn hist-log-btn on" onclick="showHistLog(2026,this)">2026</div>
+      </div>
     </div>
     <div class="tbl-scroll">
       <table><thead><tr>
         <th>Cuenta</th><th>Tema</th><th>Fabricante</th>
         <th>Ingresos</th><th>Margen %</th><th>F. Cierre</th>
       </tr></thead>
-      <tbody id="hist25-body"></tbody></table>
+      <tbody id="hist-log-body"></tbody></table>
     </div>
   </div>
 </div>
@@ -1065,15 +1070,8 @@ function initHistorico(){
 
   renderHistChart('Q1', document.querySelector('#hist-q-tabs button'));
   showHistFab(2024,$$('hist-fab-tabs').children[0]);
-
-  $$('hist25-body').innerHTML=(D.logradas_2025||[]).slice(0,15).map(o=>`<tr>
-    <td style="font-weight:600;color:var(--text)">${o.cuenta}</td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${o.tema}</td>
-    <td style="color:${FAB_C[o.fabricante]||'var(--text2)'};font-weight:600">${o.fabricante}</td>
-    <td class="mono" style="color:var(--green)">${fmt$(o.ingresos)}</td>
-    <td class="mono">${o.margen_pct}%</td>
-    <td class="mono" style="font-size:10px;color:var(--text3)">${o.fecha_cierre}</td>
-  </tr>`).join('');
+  // Iniciar tabla de logradas en 2026 (año activo)
+  showHistLog(2026, document.querySelector('.hist-log-btn.on'));
 }
 
 function showHistFab(year,el){
@@ -1083,6 +1081,33 @@ function showHistFab(year,el){
   const data=D[key]||[];
   const mx=data[0]?.monto||1;
   barChart($$('hist-fab'),data.map(f=>({l:f.fab,v:f.monto})),mx,l=>FAB_C[l]||'var(--accent)',fmtK);
+}
+
+// Datos reales de las hojas Logradas 2024/2025/2026 del Excel
+const HIST_LOGRADAS = {
+  2024: [{"cuenta":"INTELIGO","tema":"RENOVACIÓN TECNOLÓGICA INFRAESTRUCTURA","fabricante":"HPE","ingresos":216660.0,"margen_pct":22,"fecha_cierre":"31/12/2024"},{"cuenta":"TEXTIL DEL VALLE","tema":"EQUIPAMIENTO SW CATALYST Y APS MERAKI","fabricante":"CISCO","ingresos":36865.0,"margen_pct":11,"fecha_cierre":"31/12/2024"},{"cuenta":"SILGELSA","tema":"RENOVACIÓN SUSCRIPCIONES M365","fabricante":"Microsoft","ingresos":858.0,"margen_pct":12,"fecha_cierre":"31/12/2024"},{"cuenta":"QUALITAS","tema":"SERVICIO INSTALACIÓN SO RHEL","fabricante":"Otros","ingresos":800.0,"margen_pct":19,"fecha_cierre":"31/12/2024"},{"cuenta":"CLOROX","tema":"SERVICIO HABILITACIÓN 5 PUNTOS DE RED PISO 2 PLANTA CALLAO","fabricante":"Otros","ingresos":1100.0,"margen_pct":17,"fecha_cierre":"31/12/2024"},{"cuenta":"FORD","tema":"RENOVACIÓN SERVICIO OUTSOURCING","fabricante":"BVS","ingresos":104334.2,"margen_pct":36,"fecha_cierre":"31/12/2024"},{"cuenta":"APM TERMINALS","tema":"MODULOS TRANSCEIVERS CISCO","fabricante":"CISCO","ingresos":3125.0,"margen_pct":40,"fecha_cierre":"31/12/2024"},{"cuenta":"TOYOTA","tema":"Renovación Veeam","fabricante":"VEEAM","ingresos":3390.0,"margen_pct":24,"fecha_cierre":"25/12/2024"},{"cuenta":"TOYOTA","tema":"Renovación Soporte Cisco","fabricante":"BVS","ingresos":8687.64,"margen_pct":40,"fecha_cierre":"19/12/2024"},{"cuenta":"COES-SINAC","tema":"MÓDULOS TRANSCEIVER PALO ALTO","fabricante":"PALO ALTO","ingresos":1860.0,"margen_pct":32,"fecha_cierre":"29/11/2024"},{"cuenta":"PAPELERA REYES","tema":"ALQUILER SERVIDOR Y UPS POR 6MESES","fabricante":"HPE","ingresos":3840.0,"margen_pct":19,"fecha_cierre":"29/11/2024"},{"cuenta":"LAP","tema":"RENOVACIÓN SOPORTE Y GARANTÍA NODOS HPE SIMPLIVITY","fabricante":"HPE","ingresos":30390.0,"margen_pct":16,"fecha_cierre":"29/11/2024"},{"cuenta":"PLUSPETROL PERU","tema":"EXTENSIÓN M365 2MESES","fabricante":"Microsoft","ingresos":210.0,"margen_pct":24,"fecha_cierre":"29/11/2024"},{"cuenta":"STATKRAFT PERU S.A.","tema":"UPGRADE ALMACENAMIENTO PARA SERVIDOR HPE","fabricante":"HPE","ingresos":1220.0,"margen_pct":18,"fecha_cierre":"29/11/2024"},{"cuenta":"BATA","tema":"PROYECTO WIFI ALMACEN VES","fabricante":"ARUBA","ingresos":36260.0,"margen_pct":17,"fecha_cierre":"29/11/2024"}],
+  2025: [{"cuenta":"INTELIGO","tema":"RENOVACIÓN GARANTÍA HPE","fabricante":"HPE","ingresos":15490.0,"margen_pct":25,"fecha_cierre":"31/12/2025"},{"cuenta":"SMI","tema":"SWITCHES CSCO CATALYST","fabricante":"CISCO","ingresos":29569.0,"margen_pct":18,"fecha_cierre":"31/12/2025"},{"cuenta":"AJINOMOTO","tema":"200 horas de acompañamiento","fabricante":"BVS","ingresos":9069.0,"margen_pct":20,"fecha_cierre":"31/12/2025"},{"cuenta":"TOYOTA","tema":"ADENDA 04 MESES MESA DE AYUDA","fabricante":"BVS","ingresos":31384.8,"margen_pct":22,"fecha_cierre":"31/12/2025"},{"cuenta":"KALLPA","tema":"REMODELACIÓN DATACENTER","fabricante":"Rittal","ingresos":65835.0,"margen_pct":16,"fecha_cierre":"31/12/2025"},{"cuenta":"COES-SINAC","tema":"RENOVACIÓN SOPORTE PSS EQUIPAMIENTO CISCO","fabricante":"CISCO","ingresos":23790.0,"margen_pct":23,"fecha_cierre":"31/12/2025"},{"cuenta":"TOYOTA","tema":"SERVICIO DATACENTER - Trabajo FDS 20250607","fabricante":"BVS","ingresos":2269.0,"margen_pct":23,"fecha_cierre":"31/12/2025"},{"cuenta":"SILGELSA","tema":"RENOVACIÓN M365 12m","fabricante":"Microsoft","ingresos":940.0,"margen_pct":19,"fecha_cierre":"31/12/2025"},{"cuenta":"TOYOTA","tema":"SERVICIO PARA DATACENTER","fabricante":"BVS","ingresos":1360.0,"margen_pct":70,"fecha_cierre":"31/12/2025"},{"cuenta":"ISHOP PERÚ","tema":"EQUIPAMIENTO FORTINET","fabricante":"Fortinet","ingresos":23270.0,"margen_pct":31,"fecha_cierre":"31/12/2025"},{"cuenta":"CONTUGAS","tema":"RENOVACIÓN SOLUCIÓN FORTIWEB","fabricante":"Fortinet","ingresos":26490.0,"margen_pct":25,"fecha_cierre":"31/12/2025"},{"cuenta":"TEXTIL DEL VALLE","tema":"EQUIPOS DE CÓMPUTO HP Inc","fabricante":"HP inc.","ingresos":6190.0,"margen_pct":15,"fecha_cierre":"31/12/2025"},{"cuenta":"TOYOTA","tema":"RENOVACION SUSCRIPCIONES VEEAM 1Y","fabricante":"VEEAM","ingresos":3390.0,"margen_pct":32,"fecha_cierre":"31/12/2025"},{"cuenta":"AUTOMOTORES GILDEMEISTER","tema":"Evento Fin de semana","fabricante":"BVS","ingresos":753.0,"margen_pct":0,"fecha_cierre":"30/11/2025"},{"cuenta":"TRADI","tema":"ACCESORIOS PARA EQUIPOS CÓMPUTO","fabricante":"HP inc.","ingresos":725.0,"margen_pct":18,"fecha_cierre":"28/11/2025"}],
+  2026: [{"cuenta":"TOTAL ENERGIES","tema":"EQUIPAMIENTO CISCO C9300L","fabricante":"CISCO","ingresos":11369.0,"margen_pct":18,"fecha_cierre":"31/03/2026"},{"cuenta":"LAP","tema":"RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO","fabricante":"CISCO","ingresos":30970.0,"margen_pct":13,"fecha_cierre":"31/03/2026"},{"cuenta":"SONY PERU","tema":"EQUIPOS DE CÓMPUTO HP Inc","fabricante":"HP inc.","ingresos":8203.5,"margen_pct":25,"fecha_cierre":"31/03/2026"},{"cuenta":"SONY PERU","tema":"EQUIPAMIENTO NETWORKING CISCO","fabricante":"CISCO","ingresos":11716.0,"margen_pct":25,"fecha_cierre":"31/03/2026"},{"cuenta":"ENTEL PERÚ","tema":"RENOVACIÓN GARANTÍA CISCO - 01 AÑO","fabricante":"CISCO","ingresos":7800.0,"margen_pct":51,"fecha_cierre":"31/03/2026"},{"cuenta":"ENERGIGAS","tema":"RENOVACIÓN SUSCRIPCIONES CISCO MERAKI - 019/0126","fabricante":"CISCO","ingresos":1260.0,"margen_pct":25,"fecha_cierre":"27/02/2026"},{"cuenta":"TECNOLOGIA QUIMICA Y COMERCIO S.A.","tema":"SERVICIO UPS","fabricante":"Schneider Electric (APC)","ingresos":390.0,"margen_pct":20,"fecha_cierre":"27/02/2026"},{"cuenta":"TRADI","tema":"ESTABILIZADOR DATACENTER","fabricante":"Rittal","ingresos":4822.3,"margen_pct":20,"fecha_cierre":"27/02/2026"},{"cuenta":"TEXTIL DEL VALLE","tema":"SERVICIO DE MIGRACIÓN DE HPE SERVIDOR Y ALMACENAMIENTO MSA","fabricante":"HPE","ingresos":2220.0,"margen_pct":38,"fecha_cierre":"27/02/2026"},{"cuenta":"STATKRAFT PERU S.A.","tema":"EQUIPAMIENTO CISCO (SWITCH & ROUTER)","fabricante":"CISCO","ingresos":8320.0,"margen_pct":16,"fecha_cierre":"27/02/2026"},{"cuenta":"FORD","tema":"HABILITACIÓN PUNTOS DE RED EN DEPOT LURÍN","fabricante":"Otros","ingresos":172590.0,"margen_pct":20,"fecha_cierre":"27/02/2026"},{"cuenta":"BELCORP","tema":"RENOVACIÓN SUSCRIPCIONES VEEAM 365 - GC-COT-WC-010/0126","fabricante":"VEEAM","ingresos":6370.0,"margen_pct":17,"fecha_cierre":"30/01/2026"},{"cuenta":"TRADI","tema":"EQUIPOS DE CÓMPUTO HP Inc","fabricante":"HP inc.","ingresos":8287.5,"margen_pct":15,"fecha_cierre":"30/01/2026"},{"cuenta":"TEXTIL DEL VALLE","tema":"SERVICIOS LIBRERÍA HPE - GC-COT-WC-012/0126","fabricante":"BVS","ingresos":1869.0,"margen_pct":37,"fecha_cierre":"30/01/2026"},{"cuenta":"PLUSPETROL NORTE","tema":"RENOVACIÓN SUSCRIPCIÓN M365 - 005/0126","fabricante":"Microsoft","ingresos":490.0,"margen_pct":39,"fecha_cierre":"30/01/2026"}]
+};
+
+function showHistLog(year, el){
+  document.querySelectorAll('.hist-log-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  $$('hist-log-title').textContent=`Últimas 15 cerradas — ${year}`;
+  const data = HIST_LOGRADAS[year] || [];
+  const total = data.reduce((s,o)=>s+o.ingresos, 0);
+  $$('hist-log-body').innerHTML = data.map(o=>`<tr>
+    <td style="font-weight:600;color:var(--text)">${o.cuenta}</td>
+    <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;font-size:11px" title="${o.tema}">${o.tema}</td>
+    <td style="color:${FAB_C[o.fabricante]||'var(--text2)'};font-weight:600">${o.fabricante}</td>
+    <td class="mono" style="color:var(--green);font-weight:700">${fmt$(o.ingresos)}</td>
+    <td class="mono">${o.margen_pct}%</td>
+    <td class="mono" style="font-size:10px;color:var(--text3)">${o.fecha_cierre}</td>
+  </tr>`).join('') + `<tr style="background:var(--surface2);border-top:2px solid var(--border)">
+    <td colspan="3" style="padding:8px 14px;font-size:11px;font-weight:700;color:var(--text3)">TOTAL ${data.length} oportunidades</td>
+    <td class="mono" style="font-weight:800;color:var(--accent);padding:8px 14px">${fmt$(total)}</td>
+    <td colspan="2"></td>
+  </tr>`;
 }
 
 // ══════════════════════════════════════════════

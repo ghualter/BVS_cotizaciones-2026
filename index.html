@@ -969,8 +969,9 @@ function initResumen(){
     {i:'📊',l:'Margen Promedio',v:fmtP(k.margen_ytd),s:'Meta: 22%',b:k.margen_ytd>=.22?'✓ CUMPLE':'↓ BAJO META',bc:k.margen_ytd>=.22?'bg-green':'bg-red',c:mc,p:k.margen_ytd/.22},
     {i:'🎯',l:'Monto Commit',v:fmtK(k.monto_commit),s:`${k.opps_commit} opps`,b:'Commit',bc:'bg-green',c:'var(--green)',p:k.monto_commit/k.cuota_anual},
     {i:'🔵',l:'Pipeline Cisco',v:fmtK(k.pipeline_cisco),s:fmtP0(k.pct_cisco)+' del total',b:k.pct_cisco>=.8?'✓ META OK':'↓ GAP',bc:k.pct_cisco>=.8?'bg-green':'bg-red',c:'var(--cisco)',p:k.pct_cisco/.8},
-    {i:'🤝',l:'Reuniones YTD',v:k.reuniones_ytd,s:'Meta: 4/semana',b:k.reuniones_ytd>=48?'✓ OK':'En progreso',bc:k.reuniones_ytd>=48?'bg-green':'bg-yellow',c:'var(--purple)',p:k.reuniones_ytd/52},
+    {i:'🤝',l:'Reuniones YTD',v:k.reuniones_ytd,s:'Meta: 4/sem · Q1(12 sem)',b:k.reuniones_ytd>=48?'✓ OK':k.reuniones_ytd>=36?'En progreso':'↓ BAJO',bc:k.reuniones_ytd>=48?'bg-green':k.reuniones_ytd>=36?'bg-yellow':'bg-red',c:'var(--purple)',p:k.reuniones_ytd/(12*4)},
     {i:'✅',l:'Opps Logradas',v:k.logradas_count,s:`Ticket: ${fmtK(k.ticket_prom)}`,b:'YTD 2026',bc:'bg-blue',c:'var(--accent2)',p:null},
+    {i:'🏆',l:'Win Rate',v:Math.round(k.logradas_count/Math.max(1,k.logradas_count+(D.t6_renovaciones||[]).filter(r=>r.estado==='Perdido').length)*100)+'%',s:`${k.logradas_count} logradas`,b:'vs perdidas',bc:'bg-purple',c:'var(--purple)',p:k.logradas_count/Math.max(1,k.logradas_count+(D.t6_renovaciones||[]).filter(r=>r.estado==='Perdido').length)/.5},
   ];
 
   $$('kpi-main').innerHTML=kpis.map(x=>`
@@ -1436,9 +1437,9 @@ function initKPIs(){
     {i:'📊',l:'Margen Promedio',v:fmtP(k.margen_ytd),s:'Meta objetivo: 22%',b:k.margen_ytd>=.22?'✓ CUMPLE':'↓ BAJO META',bc:k.margen_ytd>=.22?'bg-green':'bg-red',c:mc,p:k.margen_ytd/.22},
     {i:'🎯',l:'Monto Commit',v:fmtK(k.monto_commit),s:`${k.opps_commit} opps en Commit`,b:'FCST Commit',bc:'bg-green',c:'var(--green)',p:k.monto_commit/k.cuota_anual},
     {i:'🔵',l:'Pipeline Cisco',v:fmtK(k.pipeline_cisco),s:fmtP0(k.pct_cisco)+' del pipeline total',b:k.pct_cisco>=.8?'✓ META OK':'↓ GAP CISCO',bc:k.pct_cisco>=.8?'bg-green':'bg-red',c:'var(--cisco)',p:k.pct_cisco/.8},
-    {i:'🤝',l:'Reuniones YTD',v:k.reuniones_ytd,s:'Meta: 4 reuniones/semana',b:k.reuniones_ytd>=48?'✓ OK':'En progreso',bc:k.reuniones_ytd>=48?'bg-green':'bg-yellow',c:'var(--purple)',p:k.reuniones_ytd/52},
+    {i:'🤝',l:'Reuniones YTD',v:k.reuniones_ytd,s:'Meta: 4/semana',b:k.reuniones_ytd>=48?'✓ OK':k.reuniones_ytd>=36?'En progreso':'↓ BAJO',bc:k.reuniones_ytd>=48?'bg-green':k.reuniones_ytd>=36?'bg-yellow':'bg-red',c:'var(--purple)',p:k.reuniones_ytd/(12*4)},
     {i:'✅',l:'Opps Logradas',v:k.logradas_count,s:`Ticket prom: ${fmtK(k.ticket_prom)}`,b:'YTD 2026',bc:'bg-blue',c:'var(--accent2)',p:null},
-    {i:'📈',l:'Avance Cuota',v:fmtP0(av),s:`${fmtK(k.booking_ytd)} de ${fmtK(k.cuota_anual)}`,b:av>=.8?'✓ EN META':av>=.25?'En camino':'↓ Rezagado',bc:av>=.8?'bg-green':av>=.25?'bg-yellow':'bg-red',c:avc,p:av},
+    {i:'📈',l:'Avance Cuota',v:fmtP0(av),s:`${fmtK(k.booking_ytd)} de ${fmtK(k.cuota_anual)}`,b:av>=.8?'✓ EN META':av>=.08?'En camino':'↓ Rezagado',bc:av>=.8?'bg-green':av>=.08?'bg-yellow':'bg-red',c:avc,p:av},
   ];
 
   $$('kpi-dedicated').innerHTML=kpis.map(x=>`
@@ -1477,13 +1478,17 @@ function initKPIs(){
   }).join('');
 
   // Semáforo table
+  const perdidas=(D.t6_renovaciones||[]).filter(r=>r.estado==='Perdido').length;
+  const winRate=k.logradas_count/Math.max(1,k.logradas_count+perdidas);
   const indicadores=[
-    {nombre:'Cumplimiento de Cuota',valor:fmtP0(av),meta:'100%',real:av,umbral_ok:.8,umbral_alerta:.5,desc:'Booking vs Cuota Anual'},
-    {nombre:'Margen Promedio',valor:fmtP(k.margen_ytd),meta:'22%',real:k.margen_ytd/.22,umbral_ok:1,umbral_alerta:.7,desc:'Ganancia / Ingresos'},
-    {nombre:'Cobertura Pipeline',valor:`${(k.pipeline_total/k.cuota_anual).toFixed(1)}X`,meta:'3X',real:k.pipeline_total/k.cuota_anual/3,umbral_ok:1,umbral_alerta:.67,desc:'Pipeline vs Cuota'},
-    {nombre:'Pipeline Cisco',valor:fmtP0(k.pct_cisco),meta:'80%',real:k.pct_cisco/.8,umbral_ok:1,umbral_alerta:.6,desc:'% Cisco del Pipeline'},
-    {nombre:'Accuracy Commit',valor:fmtP0(k.monto_commit/k.cuota_anual),meta:'>20% cuota',real:k.monto_commit/k.cuota_anual/.2,umbral_ok:1,umbral_alerta:.5,desc:'Monto Commit / Cuota'},
-    {nombre:'Ritmo Reuniones',valor:(k.reuniones_ytd/12).toFixed(1)+'/sem',meta:'4/sem',real:(k.reuniones_ytd/12)/4,umbral_ok:1,umbral_alerta:.75,desc:'Promedio semanal YTD'},
+    {nombre:'Cumplimiento de Cuota',valor:fmtP0(av),meta:'>80%',real:av/.8,umbral_ok:1,umbral_alerta:.625,desc:'Booking YTD vs Cuota Anual · Meta: >80%'},
+    {nombre:'Margen Promedio',valor:fmtP(k.margen_ytd),meta:'22%',real:k.margen_ytd/.22,umbral_ok:1,umbral_alerta:.7,desc:'Ganancia / Ingresos · Meta: ≥22%'},
+    {nombre:'Cobertura Pipeline',valor:`${(k.pipeline_total/k.cuota_anual).toFixed(1)}X`,meta:'3X',real:k.pipeline_total/k.cuota_anual/3,umbral_ok:1,umbral_alerta:.67,desc:'Pipeline Total vs Cuota Anual · Meta: 3X'},
+    {nombre:'Pipeline Cisco',valor:fmtP0(k.pct_cisco),meta:'80%',real:k.pct_cisco/.8,umbral_ok:1,umbral_alerta:.6,desc:'% Cisco del Pipeline Total · Meta: 80%'},
+    {nombre:'Accuracy Commit',valor:fmtP0(k.logradas_count/Math.max(1,k.opps_total)),meta:'>80%',real:k.logradas_count/Math.max(1,k.opps_total)/.8,umbral_ok:1,umbral_alerta:.5,desc:'Opps Cerradas / Opps Totales · Meta: >80%'},
+    {nombre:'Ritmo Reuniones',valor:(k.reuniones_ytd/12).toFixed(1)+'/sem',meta:'4/sem',real:(k.reuniones_ytd/12)/4,umbral_ok:1,umbral_alerta:.75,desc:'Promedio semanal · 12 semanas YTD · Meta: 4/sem'},
+    {nombre:'Win Rate YTD',valor:fmtP0(winRate),meta:'>50%',real:winRate/.5,umbral_ok:1,umbral_alerta:.6,desc:`Logradas / (Logradas + Perdidas) · ${k.logradas_count} logradas, ${perdidas} perdidas`},
+    {nombre:'Ticket Promedio',valor:fmtK(k.ticket_prom),meta:'>$100K',real:k.ticket_prom/100000,umbral_ok:1,umbral_alerta:.2,desc:`Ingreso promedio por oportunidad cerrada · Meta: >$100K`},
   ];
 
   $$('kpi-semaforo').innerHTML=indicadores.map(ind=>{
@@ -1559,6 +1564,7 @@ function initScoreboard(){
   }).join('');
 
   // Tabla detalle
+  const wR=k.logradas_count/Math.max(1,k.logradas_count+(D.t6_renovaciones||[]).filter(r=>r.estado==='Perdido').length);
   const rows=[
     {ind:'BKG FY (Booking logrado)',     val:fmtM(SB.bkg),           ref:fmtM(3000000)+' anual', att:SB.bkg/3000000,  ok:.8,  warn:.3},
     {ind:'Cuota Anual AM',               val:fmtM(3000000),           ref:'Meta anual 2026',  att:SB.bkg/3000000, ok:.8, warn:.3},
@@ -1569,6 +1575,9 @@ function initScoreboard(){
     {ind:'Strong Pond.',                 val:fmtM(SB.strong_pond),   ref:'—',                att:null},
     {ind:'Upside Pond.',                 val:fmtM(SB.upside_pond),   ref:'—',                att:null},
     {ind:'Factor X',                     val:SB.factor_x.toFixed(2)+'%', ref:'EU Andina',    att:null},
+    {ind:'Accuracy Commit',              val:Math.round(k.logradas_count/Math.max(1,k.opps_total)*100)+'%', ref:'>80% meta',att:k.logradas_count/Math.max(1,k.opps_total)/.8, ok:1, warn:.5},
+    {ind:'Win Rate YTD',                 val:Math.round(wR*100)+'%', ref:'>50% meta',        att:wR/.5, ok:1, warn:.6},
+    {ind:'Ticket Promedio',              val:fmtM(k.ticket_prom),    ref:'>$100K meta',      att:k.ticket_prom/100000, ok:1, warn:.2},
   ];
 
   $$('sb-detalle-body').innerHTML=rows.map((r,i)=>{

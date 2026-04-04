@@ -288,6 +288,7 @@ tr:last-child td{border-bottom:none;}
   <div class="nav-tab" onclick="goTab('cuentas',this)">🏢 Cuentas<span class="tab-badge" id="tb-cuentas">—</span></div>
   <div class="nav-tab" onclick="goTab('renovaciones',this)">🔄 Renovaciones<span class="tab-badge" id="tb-ren">42</span></div>
   <div class="nav-tab" onclick="goTab('actividades',this)">📅 Actividades</div>
+    <div class="nav-tab" onclick="goTab('facturacion',this)">💳 Facturación</div>
   <div class="nav-tab" onclick="goTab('proyeccion',this)">📐 Mi Proyección</div>
 </div>
 
@@ -851,6 +852,807 @@ tr:last-child td{border-bottom:none;}
 
 
 
+
+
+
+<!-- ══════════════════════ TAB: T12 FACTURACIÓN ══════════════════════ -->
+<div class="tab-pane" id="tab-facturacion">
+
+<style>
+/* ── T12 TAB STYLES ── */
+#tab-facturacion {
+  --q1-bg:#DDEBF7;--q1-h:#1F6391;--q1-t:#fff;
+  --q2-bg:#E2EFDA;--q2-h:#375623;--q2-t:#fff;
+  --q3-bg:#FFF2CC;--q3-h:#7F6000;--q3-t:#fff;
+  --q4-bg:#FCE4D6;--q4-h:#843C0C;--q4-t:#fff;
+  --accent2:#0ea5e9;
+}
+.t12-kpi-strip {display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.t12-kpi {background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex:1;min-width:140px;}
+.t12-kpi .kpi-lbl {font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.t12-kpi .kpi-val {font-size:20px;font-weight:700;color:var(--text1);font-family:'DM Mono',monospace;}
+.t12-kpi .kpi-sub {font-size:10px;color:var(--text3);margin-top:2px;}
+.t12-kpi.kpi-highlight {border-color:var(--accent);background:rgba(14,165,233,.05);}
+.t12-kpi.kpi-highlight .kpi-val {color:var(--accent);}
+
+/* Panel comisiones */
+.t12-panels {display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+@media(max-width:900px){.t12-panels{grid-template-columns:repeat(2,1fr);}}
+.panel-q {border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.panel-q.q1 .pq-header{background:var(--q1-h);}
+.panel-q.q2 .pq-header{background:var(--q2-h);}
+.panel-q.q3 .pq-header{background:var(--q3-h);}
+.panel-q.q4 .pq-header{background:var(--q4-h);}
+.pq-header{display:flex;align-items:center;gap:8px;padding:10px 12px;}
+.pq-emoji{font-size:16px;}
+.pq-label{font-size:11px;font-weight:700;color:#fff;letter-spacing:.02em;}
+.pq-rows{padding:8px 0;background:var(--surface2);}
+.pq-row{display:flex;justify-content:space-between;align-items:center;padding:5px 12px;font-size:10px;color:var(--text2);border-bottom:1px solid var(--border);}
+.pq-row:last-child{border-bottom:none;}
+.pq-row.accent{background:rgba(14,165,233,.06);}
+.pq-row.neta{background:rgba(34,197,94,.08);border-top:2px solid rgba(34,197,94,.3)!important;}
+.pq-val{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--text1);}
+.pq-val.pct-ok{color:#22c55e;}
+.pq-val.pct-med{color:#f59e0b;}
+.pq-val.pct-low{color:#ef4444;}
+.pq-val.aplica-si{color:#22c55e;font-size:9px;}
+.pq-val.aplica-no{color:#ef4444;font-size:9px;}
+.pq-val.neta-val{font-size:12px;color:#22c55e;font-weight:700;}
+
+/* Tabla */
+.t12-table-wrap {overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+.t12-table {width:100%;border-collapse:collapse;font-size:11px;}
+.t12-table thead th {background:var(--surface3);color:var(--text2);font-size:9px;text-transform:uppercase;letter-spacing:.05em;padding:8px 10px;border-bottom:2px solid var(--border);white-space:nowrap;}
+.t12-table tr{border-bottom:1px solid var(--border);transition:background .15s;}
+.t12-table tr:hover{background:rgba(14,165,233,.04);}
+.row-facturado{opacity:.8;}
+.row-maestra{background:rgba(30,58,138,.06);border-left:3px solid var(--q1-h)!important;}
+.row-cuota{background:var(--surface2);}
+.row-cuota td{font-size:9px;color:var(--text3);padding:4px 10px!important;}
+.cuota-ok{opacity:.7;}
+.cuota-pend td{color:var(--text2)!important;}
+.cuota-n{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);padding-left:24px!important;}
+td{padding:7px 10px;vertical-align:middle;}
+.cli-cell{font-weight:600;color:var(--text1);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;}
+.fab-cell{font-size:9px;color:var(--text3);white-space:nowrap;}
+.det-cell{color:var(--text2);max-width:220px;}
+.money{font-family:'DM Mono',monospace;text-align:right;white-space:nowrap;color:var(--text1);}
+.money.util{color:var(--accent);}
+.date-cell{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3);white-space:nowrap;}
+.hfyc-cell{font-size:9px;font-family:'DM Mono',monospace;color:var(--text3);}
+.margen-bar{display:flex;align-items:center;gap:6px;min-width:80px;}
+.margen-fill{height:5px;border-radius:3px;background:var(--accent);min-width:2px;}
+.margen-bar span{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;}
+
+/* Badges */
+.qbadge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700;}
+.qbadge.q1{background:var(--q1-bg);color:var(--q1-h);}
+.qbadge.q2{background:var(--q2-bg);color:var(--q2-h);}
+.qbadge.q3{background:var(--q3-bg);color:var(--q3-h);}
+.qbadge.q4{background:var(--q4-bg);color:var(--q4-h);}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;white-space:nowrap;}
+.badge-si{background:rgba(34,197,94,.15);color:#16a34a;}
+.badge-no{background:rgba(239,68,68,.12);color:#dc2626;}
+.badge-mensual{background:rgba(14,165,233,.12);color:var(--accent);font-size:9px;padding:2px 8px;border-radius:10px;display:inline-block;}
+.badge-mensual2{background:rgba(34,197,94,.12);color:#16a34a;font-size:9px;padding:2px 8px;border-radius:10px;display:inline-block;}
+.sh-sep{height:1px;background:var(--border);margin:20px 0 14px;}
+.t12-section-title{font-size:12px;font-weight:700;color:var(--text1);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.t12-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+</style>
+
+<div class="sh">💳 Facturación 2026 — T12 <span class="sh-line"></span></div>
+
+<!-- KPI STRIP -->
+<div class="t12-kpi-strip">
+  <div class="t12-kpi">
+    <div class="kpi-lbl">Total Facturado YTD</div>
+    <div class="kpi-val">$56.7K</div>
+    <div class="kpi-sub">vs Cuota Anual $3.0M → 1.9%</div>
+  </div>
+  <div class="t12-kpi kpi-highlight">
+    <div class="kpi-lbl">Util. Facturada YTD</div>
+    <div class="kpi-val">$9.4K</div>
+    <div class="kpi-sub">Margen promedio 16.6%</div>
+  </div>
+  <div class="t12-kpi">
+    <div class="kpi-lbl"># Facturados 2026</div>
+    <div class="kpi-val">9</div>
+    <div class="kpi-sub">12 pendientes de facturar</div>
+  </div>
+  <div class="t12-kpi">
+    <div class="kpi-lbl">Comisión Neta Acum.</div>
+    <div class="kpi-val">$0</div>
+    <div class="kpi-sub">7% bruto · Gate 70% · −30.5% Ley</div>
+  </div>
+  <div class="t12-kpi">
+    <div class="kpi-lbl">Mensualizados activos</div>
+    <div class="kpi-val">3</div>
+    <div class="kpi-sub">Toyota · COES-SINAC · Clorox</div>
+  </div>
+</div>
+
+<!-- PANEL DE COMISIONES -->
+<div class="t12-section-title">⚙️ Panel de Comisiones por Quarter</div>
+<div class="t12-panels">
+  
+    <div class="panel-q q1">
+      <div class="pq-header">
+        <span class="pq-emoji">🟦</span>
+        <span class="pq-label">Q1 · Ene–Mar 2026</span>
+      </div>
+      <div class="pq-rows">
+        <div class="pq-row"><span>📋 Cuota Q</span><span class="pq-val">$600,000.00</span></div>
+        <div class="pq-row"><span>🎯 Gate 70%</span><span class="pq-val">$420,000.00</span></div>
+        <div class="pq-row accent"><span>💰 Util. Facturada</span><span class="pq-val">$57,619.21</span></div>
+        <div class="pq-row"><span>📊 % Cumplimiento</span><span class="pq-val pct-low">9.6%</span></div>
+        <div class="pq-row"><span>✅ ¿Aplica comisión?</span><span class="pq-val aplica-no">❌ Aún no</span></div>
+        <div class="pq-row"><span>💵 Comisión Bruta (7%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>➖ Descuentos Ley (30.5%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row neta"><span>🏆 COMISIÓN NETA</span><span class="pq-val neta-val">$0.00</span></div>
+      </div>
+    </div>
+    <div class="panel-q q2">
+      <div class="pq-header">
+        <span class="pq-emoji">🟩</span>
+        <span class="pq-label">Q2 · Abr–Jun 2026</span>
+      </div>
+      <div class="pq-rows">
+        <div class="pq-row"><span>📋 Cuota Q</span><span class="pq-val">$750,000.00</span></div>
+        <div class="pq-row"><span>🎯 Gate 70%</span><span class="pq-val">$525,000.00</span></div>
+        <div class="pq-row accent"><span>💰 Util. Facturada</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>📊 % Cumplimiento</span><span class="pq-val pct-low">0.0%</span></div>
+        <div class="pq-row"><span>✅ ¿Aplica comisión?</span><span class="pq-val aplica-no">❌ Aún no</span></div>
+        <div class="pq-row"><span>💵 Comisión Bruta (7%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>➖ Descuentos Ley (30.5%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row neta"><span>🏆 COMISIÓN NETA</span><span class="pq-val neta-val">$0.00</span></div>
+      </div>
+    </div>
+    <div class="panel-q q3">
+      <div class="pq-header">
+        <span class="pq-emoji">🟨</span>
+        <span class="pq-label">Q3 · Jul–Sep 2026</span>
+      </div>
+      <div class="pq-rows">
+        <div class="pq-row"><span>📋 Cuota Q</span><span class="pq-val">$750,000.00</span></div>
+        <div class="pq-row"><span>🎯 Gate 70%</span><span class="pq-val">$525,000.00</span></div>
+        <div class="pq-row accent"><span>💰 Util. Facturada</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>📊 % Cumplimiento</span><span class="pq-val pct-low">0.0%</span></div>
+        <div class="pq-row"><span>✅ ¿Aplica comisión?</span><span class="pq-val aplica-no">❌ Aún no</span></div>
+        <div class="pq-row"><span>💵 Comisión Bruta (7%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>➖ Descuentos Ley (30.5%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row neta"><span>🏆 COMISIÓN NETA</span><span class="pq-val neta-val">$0.00</span></div>
+      </div>
+    </div>
+    <div class="panel-q q4">
+      <div class="pq-header">
+        <span class="pq-emoji">🟧</span>
+        <span class="pq-label">Q4 · Oct–Dic 2026</span>
+      </div>
+      <div class="pq-rows">
+        <div class="pq-row"><span>📋 Cuota Q</span><span class="pq-val">$900,000.00</span></div>
+        <div class="pq-row"><span>🎯 Gate 70%</span><span class="pq-val">$630,000.00</span></div>
+        <div class="pq-row accent"><span>💰 Util. Facturada</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>📊 % Cumplimiento</span><span class="pq-val pct-low">0.0%</span></div>
+        <div class="pq-row"><span>✅ ¿Aplica comisión?</span><span class="pq-val aplica-no">❌ Aún no</span></div>
+        <div class="pq-row"><span>💵 Comisión Bruta (7%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row"><span>➖ Descuentos Ley (30.5%)</span><span class="pq-val">$0.00</span></div>
+        <div class="pq-row neta"><span>🏆 COMISIÓN NETA</span><span class="pq-val neta-val">$0.00</span></div>
+      </div>
+    </div>
+</div>
+
+<!-- TABLA NEGOCIOS 2026 -->
+<div class="t12-section-title">📋 Negocios 2026 — Registro de Facturación</div>
+<div class="t12-table-wrap">
+  <table class="t12-table">
+    <thead>
+      <tr>
+        <th>Q</th><th>Cliente</th><th>Fabricante</th><th>Detalle</th>
+        <th>Venta ($)</th><th>Util. ($)</th><th>Margen</th>
+        <th>F. Est. Fact.</th><th>F. Fact. Real</th><th>Estado</th><th># HFYC</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr class="row-unico ">
+        <td><span class="qbadge q2">Q2</span></td>
+        <td class="cli-cell">KOMATSU</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACION LICENCIAS CATALYST Y FIREPOWER - 01 AÑO">RENOVACION LICENCIAS CATALYST Y FIREPOWER - 01 A…</td>
+        <td class="money">$13,490.00</td>
+        <td class="money util">$2,428.20</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:18.0%"></div><span>18%</span></div></td>
+        <td class="date-cell">16/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">LAP</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACIÓN DE GARANTÍA CISCO - 01 AÑO">RENOVACIÓN DE GARANTÍA CISCO - 01 AÑO</td>
+        <td class="money">$35,049.00</td>
+        <td class="money util">$5,257.35</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:15.0%"></div><span>15%</span></div></td>
+        <td class="date-cell">15/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TRADI</td>
+        <td class="fab-cell">Vertiv</td>
+        <td class="det-cell" title="UPS 10KVa PARA DATACENTER">UPS 10KVa PARA DATACENTER</td>
+        <td class="money">$10,290.00</td>
+        <td class="money util">$1,852.20</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:18.0%"></div><span>18%</span></div></td>
+        <td class="date-cell">09/06/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">SONY PERU</td>
+        <td class="fab-cell">HP inc.</td>
+        <td class="det-cell" title="EQUIPOS DE CÓMPUTO HP Inc">EQUIPOS DE CÓMPUTO HP Inc</td>
+        <td class="money">$9,333.50</td>
+        <td class="money util">$2,333.38</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:25.0%"></div><span>25%</span></div></td>
+        <td class="date-cell">09/06/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">INTELIGO</td>
+        <td class="fab-cell">BVS</td>
+        <td class="det-cell" title="SERVICIO AGILE PACK">SERVICIO AGILE PACK</td>
+        <td class="money">$960.00</td>
+        <td class="money util">$393.60</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:41.0%"></div><span>41%</span></div></td>
+        <td class="date-cell">20/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">RPP</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACIÓN SUSCRIPCIONES CISCO MERAKI – 01 AÑO">RENOVACIÓN SUSCRIPCIONES CISCO MERAKI – 01 AÑO</td>
+        <td class="money">$1,569.00</td>
+        <td class="money util">$470.70</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:30.0%"></div><span>30%</span></div></td>
+        <td class="date-cell">15/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">GESNEXT</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACIÓN DE SWITCHES CISCO - 01 AÑO">RENOVACIÓN DE SWITCHES CISCO - 01 AÑO</td>
+        <td class="money">$20,800.00</td>
+        <td class="money util">$3,120.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:15.0%"></div><span>15%</span></div></td>
+        <td class="date-cell">10/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">ENTEL PERÚ</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACIÓN GARANTÍA CISCO - 01 AÑO">RENOVACIÓN GARANTÍA CISCO - 01 AÑO</td>
+        <td class="money">$7,800.00</td>
+        <td class="money util">$3,978.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:51.0%"></div><span>51%</span></div></td>
+        <td class="date-cell">07/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">LAP</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO">RENOVACIÓN DE GARANTÍA CISCO – 01 AÑO</td>
+        <td class="money">$30,970.00</td>
+        <td class="money util">$4,026.10</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:13.0%"></div><span>13%</span></div></td>
+        <td class="date-cell">20/03/2026</td>
+        <td class="date-cell">30/03/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0065</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">SONY PERU</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="EQUIPAMIENTO NETWORKING CISCO">EQUIPAMIENTO NETWORKING CISCO</td>
+        <td class="money">$11,716.00</td>
+        <td class="money util">$2,929.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:25.0%"></div><span>25%</span></div></td>
+        <td class="date-cell">14/05/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TOTAL ENERGIES</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="EQUIPAMIENTO CISCO C9300L">EQUIPAMIENTO CISCO C9300L</td>
+        <td class="money">$11,369.00</td>
+        <td class="money util">$2,046.42</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:18.0%"></div><span>18%</span></div></td>
+        <td class="date-cell">13/05/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">FORD</td>
+        <td class="fab-cell">Otros</td>
+        <td class="det-cell" title="HABILITACIÓN PUNTOS DE RED EN DEPOT LURÍN">HABILITACIÓN PUNTOS DE RED EN DEPOT LURÍN</td>
+        <td class="money">$172,590.00</td>
+        <td class="money util">$34,518.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:20.0%"></div><span>20%</span></div></td>
+        <td class="date-cell">08/05/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TEXTIL DEL VALLE</td>
+        <td class="fab-cell">HPE</td>
+        <td class="det-cell" title="SERVICIO DE MIGRACIÓN HPE SERVIDOR Y ALMACENAMIENTO">SERVICIO DE MIGRACIÓN HPE SERVIDOR Y ALMACENAMIE…</td>
+        <td class="money">$2,220.00</td>
+        <td class="money util">$843.60</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:38.0%"></div><span>38%</span></div></td>
+        <td class="date-cell">10/03/2026</td>
+        <td class="date-cell">26/02/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0042</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TRADI</td>
+        <td class="fab-cell">Rittal</td>
+        <td class="det-cell" title="ESTABILIZADOR DATACENTER">ESTABILIZADOR DATACENTER</td>
+        <td class="money">$4,822.30</td>
+        <td class="money util">$964.46</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:20.0%"></div><span>20%</span></div></td>
+        <td class="date-cell">21/04/2026</td>
+        <td class="date-cell">12/03/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0037</td>
+      </tr>
+      <tr class="row-unico ">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">STATKRAFT PERU</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="EQUIPAMIENTO CISCO (SWITCH & ROUTER)">EQUIPAMIENTO CISCO (SWITCH & ROUTER)</td>
+        <td class="money">$8,320.00</td>
+        <td class="money util">$1,331.20</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:16.0%"></div><span>16%</span></div></td>
+        <td class="date-cell">17/04/2026</td>
+        <td class="date-cell"></td>
+        <td><span class="badge badge-no">Pendiente</span></td>
+        <td class="hfyc-cell">—</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TQC S.A.</td>
+        <td class="fab-cell">Schneider</td>
+        <td class="det-cell" title="SERVICIO UPS">SERVICIO UPS</td>
+        <td class="money">$390.00</td>
+        <td class="money util">$78.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:20.0%"></div><span>20%</span></div></td>
+        <td class="date-cell">23/02/2026</td>
+        <td class="date-cell">12/03/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0027</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TRADI</td>
+        <td class="fab-cell">HP inc.</td>
+        <td class="det-cell" title="EQUIPOS DE CÓMPUTO HP Inc">EQUIPOS DE CÓMPUTO HP Inc</td>
+        <td class="money">$8,287.50</td>
+        <td class="money util">$1,243.13</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:15.0%"></div><span>15%</span></div></td>
+        <td class="date-cell">10/04/2026</td>
+        <td class="date-cell">19/02/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0021</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">ENERGIGAS</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell" title="RENOVACIÓN SUSCRIPCIONES CISCO MERAKI">RENOVACIÓN SUSCRIPCIONES CISCO MERAKI</td>
+        <td class="money">$1,260.00</td>
+        <td class="money util">$315.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:25.0%"></div><span>25%</span></div></td>
+        <td class="date-cell">12/02/2026</td>
+        <td class="date-cell">10/02/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0023</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">PLUSPETROL NORTE</td>
+        <td class="fab-cell">Microsoft</td>
+        <td class="det-cell" title="RENOVACIÓN SUSCRIPCIÓN M365">RENOVACIÓN SUSCRIPCIÓN M365</td>
+        <td class="money">$490.00</td>
+        <td class="money util">$191.10</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:39.0%"></div><span>39%</span></div></td>
+        <td class="date-cell">12/02/2026</td>
+        <td class="date-cell">10/02/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0024</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">TEXTIL DEL VALLE</td>
+        <td class="fab-cell">BVS</td>
+        <td class="det-cell" title="SERVICIOS LIBRERÍA HPE">SERVICIOS LIBRERÍA HPE</td>
+        <td class="money">$1,869.00</td>
+        <td class="money util">$691.53</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:37.0%"></div><span>37%</span></div></td>
+        <td class="date-cell">12/02/2026</td>
+        <td class="date-cell">26/02/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0018</td>
+      </tr>
+      <tr class="row-unico row-facturado">
+        <td><span class="qbadge q1">Q1</span></td>
+        <td class="cli-cell">BELCORP</td>
+        <td class="fab-cell">Veeam</td>
+        <td class="det-cell" title="RENOVACIÓN SUSCRIPCIONES VEEAM 365">RENOVACIÓN SUSCRIPCIONES VEEAM 365</td>
+        <td class="money">$6,370.00</td>
+        <td class="money util">$1,082.90</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:17.0%"></div><span>17%</span></div></td>
+        <td class="date-cell">06/02/2026</td>
+        <td class="date-cell">24/02/2026</td>
+        <td><span class="badge badge-si">✓ Facturado</span></td>
+        <td class="hfyc-cell">2026-0065</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- TABLA MENSUALIZADOS -->
+<div class="sh-sep"></div>
+<div class="t12-section-title">🔄 Mensualizados — Detalle de Cuotas</div>
+<div class="t12-table-wrap">
+  <table class="t12-table">
+    <thead>
+      <tr>
+        <th></th><th>Cliente</th><th>Fabricante</th><th>Detalle</th>
+        <th>Monto ($)</th><th>Facturado ($)</th><th>Progreso</th>
+        <th>F. Est. Fact.</th><th>F. Fact. Real</th><th>Estado</th><th># HFYC</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr class="row-maestra">
+        <td><span style="font-size:10px;color:var(--text3)">M</span></td>
+        <td class="cli-cell" style="font-weight:700;color:var(--accent2)">TOYOTA</td>
+        <td class="fab-cell">BVS</td>
+        <td class="det-cell">ADENDA 04 MESES MESA DE AYUDA</td>
+        <td class="money" style="font-weight:700">$31,384.80</td>
+        <td class="money util">$15,692.40</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:50%;background:var(--accent2)"></div><span>2/4</span></div></td>
+        <td class="date-cell" colspan="2"><span class="badge-mensual">🔄 4 cuotas</span></td>
+        <td><span class="badge badge-mensual2">2 facturadas</span></td>
+        <td class="hfyc-cell">2025-0411</td>
+      </tr>
+      
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 01</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">19/01/2026</td>
+            <td class="money" style="font-size:9px">$7,846.20</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px">19/01/2026</td>
+            <td class="date-cell" style="font-size:9px">09/02/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 02</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">11/03/2026</td>
+            <td class="money" style="font-size:9px">$7,846.20</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">11/03/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 03</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$7,846.20</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 04</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$7,846.20</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+      <tr class="row-maestra">
+        <td><span style="font-size:10px;color:var(--text3)">M</span></td>
+        <td class="cli-cell" style="font-weight:700;color:var(--accent2)">COES-SINAC</td>
+        <td class="fab-cell">Cisco</td>
+        <td class="det-cell">RENOVACIÓN SOPORTE PSS EQUIPAMIENTO CISCO</td>
+        <td class="money" style="font-weight:700">$23,790.00</td>
+        <td class="money util">$21,550.00</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:33%;background:var(--accent2)"></div><span>4/12</span></div></td>
+        <td class="date-cell" colspan="2"><span class="badge-mensual">🔄 12 cuotas</span></td>
+        <td><span class="badge badge-mensual2">4 facturadas</span></td>
+        <td class="hfyc-cell">2025-0393</td>
+      </tr>
+      
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 01</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">03/01/2026</td>
+            <td class="money" style="font-size:9px">$20,710.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px">03/01/2026</td>
+            <td class="date-cell" style="font-size:9px">21/01/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 02</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">21/01/2026</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">21/01/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 03</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">17/02/2026</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">17/02/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 04</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">23/03/2026</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">23/03/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 05</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 06</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 07</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 08</td>
+            <td><span class="qbadge q3" style="font-size:9px">Q3</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 09</td>
+            <td><span class="qbadge q3" style="font-size:9px">Q3</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 10</td>
+            <td><span class="qbadge q3" style="font-size:9px">Q3</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 11</td>
+            <td><span class="qbadge q4" style="font-size:9px">Q4</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 12</td>
+            <td><span class="qbadge q4" style="font-size:9px">Q4</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$280.00</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+      <tr class="row-maestra">
+        <td><span style="font-size:10px;color:var(--text3)">M</span></td>
+        <td class="cli-cell" style="font-weight:700;color:var(--accent2)">CLOROX</td>
+        <td class="fab-cell">BVS</td>
+        <td class="det-cell">RENOVACIÓN CONTRATO OUTSOURCING 8M</td>
+        <td class="money" style="font-weight:700">$17,142.88</td>
+        <td class="money util">$10,714.30</td>
+        <td><div class="margen-bar"><div class="margen-fill" style="width:62%;background:var(--accent2)"></div><span>5/8</span></div></td>
+        <td class="date-cell" colspan="2"><span class="badge-mensual">🔄 8 cuotas</span></td>
+        <td><span class="badge badge-mensual2">5 facturadas</span></td>
+        <td class="hfyc-cell">2025-0369</td>
+      </tr>
+      
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 01</td>
+            <td><span class="qbadge q4" style="font-size:9px">Q4</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">13/12/2025</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px">13/12/2025</td>
+            <td class="date-cell" style="font-size:9px">11/12/2025</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 02</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">30/03/2026</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">30/03/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ GESTIÓN CERT</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 03</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">30/03/2026</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">30/03/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ GESTIÓN CERT</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 04</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">30/03/2026</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">30/03/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ GESTIÓN CERT</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-ok">
+            <td class="cuota-n">↳ 05</td>
+            <td><span class="qbadge q1" style="font-size:9px">Q1</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">30/03/2026</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px">30/03/2026</td>
+            <td><span class="badge badge-si" style="font-size:9px">✓ FACTURADO</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 06</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 07</td>
+            <td><span class="qbadge q2" style="font-size:9px">Q2</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+          <tr class="row-cuota cuota-pend">
+            <td class="cuota-n">↳ 08</td>
+            <td><span class="qbadge q3" style="font-size:9px">Q3</span></td>
+            <td colspan="2" class="det-cell" style="color:var(--text3);font-size:9px">—</td>
+            <td class="money" style="font-size:9px">$2,142.86</td>
+            <td colspan="2"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td class="date-cell" style="font-size:9px"></td>
+            <td><span class="badge badge-no" style="font-size:9px">· PENDIENTE</span></td>
+            <td></td>
+          </tr>
+    </tbody>
+  </table>
+</div>
+
+</div><!-- /tab-facturacion -->
 
 
 </div><!-- /main -->
